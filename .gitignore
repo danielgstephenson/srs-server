@@ -1,0 +1,7 @@
+node_modules/
+config.json
+*.pem
+public/sessions/*
+!public/sessions/.gitkeep
+grades/*
+!grades/.gitkeep

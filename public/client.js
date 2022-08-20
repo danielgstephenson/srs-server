@@ -10,7 +10,7 @@ const socket = io()
 
 let loginComplete = false
 let answerComplete = false
-let studentId
+let eID
 let state = 'login'
 
 socket.on('updateClients', (msg) => {
@@ -39,14 +39,14 @@ socket.on('answerReceived', (msg) => {
 
 window.login = () => {
   console.log('login')
-  studentId = loginForm.studentIdInput.value.toLowerCase().split(' ').join('')
-  socket.emit('login', { studentId })
+  eID = loginForm.eIdInput.value.toLowerCase().split(' ').join('')
+  socket.emit('login', { eID })
   return false
 }
 
 window.submitAnswer = () => {
   console.log('submitAnswer')
-  socket.emit('submitAnswer', { answer: answerInput.value, studentId })
+  socket.emit('submitAnswer', { answer: answerInput.value, eID })
 }
 
 window.changeAnswer = () => {

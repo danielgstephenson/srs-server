@@ -84,30 +84,30 @@ io.on('connection', function (socket) {
   })
 
   socket.on('login', msg => {
-    const studentId = msg.studentId
-    const firstName = firstNames[studentId]
-    const lastName = lastNames[studentId]
-    students[studentId] = { firstName, lastName, excused: 0, answers: [] }
-    console.log('login: ' + firstName + ' ' + lastName + ' ' + studentId)
+    const eID = msg.eID
+    const firstName = firstNames[eID]
+    const lastName = lastNames[eID]
+    students[eID] = { firstName, lastName, answers: [] }
+    console.log('login: ' + firstName + ' ' + lastName + ' ' + eID)
     socket.emit('loginComplete')
   })
 
   socket.on('submitAnswer', msg => {
-    const studentId = msg.studentId
-    const firstName = firstNames[studentId]
-    const lastName = lastNames[studentId]
-    students[studentId] = { firstName, lastName, studentId, excused: 0 }
+    const eID = msg.eID
+    const firstName = firstNames[eID]
+    const lastName = lastNames[eID]
+    students[eID] = { firstName, lastName, eID }
     answered[socket.id] = true
     if (answers[currentQuestion] === undefined) {
       answers[currentQuestion] = {}
     }
     if (isFinite(parseFloat(msg.answer))) {
-      answers[currentQuestion][studentId] = String(parseFloat(msg.answer))
+      answers[currentQuestion][eID] = String(parseFloat(msg.answer))
     } else {
-      answers[currentQuestion][studentId] = msg.answer.toLowerCase()
+      answers[currentQuestion][eID] = msg.answer.toLowerCase()
     }
     socket.emit('answerReceived')
-    console.log('submitAnswer ' + studentId + ' ' + firstNames[studentId] + ' ' + lastNames[studentId] + ' : ' + msg.answer)
+    console.log('submitAnswer ' + eID + ' ' + firstNames[eID] + ' ' + lastNames[eID] + ' : ' + msg.answer)
   })
 
   socket.on('loadSession', async msg => {
@@ -128,8 +128,7 @@ io.on('connection', function (socket) {
       students[student.eID] = {
         firstName: student.firstName,
         lastName: student.lastName,
-        studentId: student.eID,
-        excused: 0
+        eID: student.eID
       }
       questionIds.forEach(questionId => {
         answers[questionId][student.eID] = student[questionId]
@@ -163,15 +162,15 @@ function writeDataFile () {
   let csvString = 'eID,firstName,lastName,excused'
   for (const i of Array(maxQuestion + 1).keys()) { csvString += ',' + i }
   csvString += '\n'
-  Object.keys(students).forEach(studentId => {
-    const student = students[studentId]
-    csvString += studentId + ','
+  Object.keys(students).forEach(eID => {
+    const student = students[eID]
+    csvString += eID + ','
     csvString += student.firstName + ','
     csvString += student.lastName + ','
-    csvString += student.excused
+    csvString += 0
     answers.forEach(answer => {
       csvString += ','
-      if (answer[studentId]) csvString += answer[studentId]
+      if (answer[eID]) csvString += answer[eID]
     })
     csvString += '\n'
   })

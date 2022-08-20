@@ -43,10 +43,7 @@ socket.on('updateClients', msg => {
 })
 
 socket.on('sessionData', msg => {
-  console.log(msg.csvString)
-  const csvString = msg.csvString
-  const rows = csvString.split('\n').map(row => row.split(','))
-  console.log(rows)
+  console.log(msg)
   sessionId = msg.sessionId
   state = 'wait'
 })

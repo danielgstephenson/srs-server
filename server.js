@@ -54,8 +54,8 @@ let answers = []
 let answered = {}
 let correctAnswers = []
 let sessions = []
-const firstNames = {}
-const lastNames = {}
+let firstNames = {}
+let lastNames = {}
 
 function average (array) {
   if (array.length === 0) return 0
@@ -114,50 +114,44 @@ io.on('connection', function (socket) {
 
   socket.on('loadSession', async msg => {
     const filePath = './public/sessions/' + msg.sessionId + '/answers.csv'
-    const sessionRows = await csvtojson().fromFile(filePath)
-    console.log(sessionRows)
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) throw err
-      socket.emit('sessionData', { sessionId: msg.sessionId, csvString: data })
-      const rows = data.split('\n').map(row => row.split(','))
-      students = {}
-      answers = []
-      correctAnswers = []
-      maxQuestion = rows[0].length - 5
-      currentQuestion = maxQuestion
-      rows.forEach((row, rowIndex) => {
-        if (rowIndex === 0) {
-          row.forEach((questionId, columnIndex) => {
-            if (columnIndex > 3) answers[columnIndex - 4] = {}
-          })
-        }
-        if (rowIndex > 0 && rowIndex < rows.length - 1) {
-          const studentId = row[0]
-          students[studentId] = { firstName: row[1], lastName: row[2], excused: row[3] }
-          row.forEach((answer, columnIndex) => {
-            if (columnIndex > 3) answers[columnIndex - 4][studentId] = answer
-          })
-        }
-        if (rowIndex === rows.length - 1) {
-          row.forEach((answer, columnIndex) => {
-            if (columnIndex > 3) correctAnswers[columnIndex - 4] = answer
-          })
-        }
-      })
-      console.log('students')
-      console.log(students)
-      console.log('answers')
-      console.log(answers)
-      console.log('correctAnswers')
-      console.log(correctAnswers)
+    const sessionData = await csvtojson().fromFile(filePath)
+    socket.emit('sessionData', { sessionId: msg.sessionId, sessionData })
+    const answerKey = sessionData.pop()
+    console.log('answerKey', answerKey)
+    students = {}
+    answers = []
+    correctAnswers = []
+    maxQuestion = Object.keys(answerKey).length - 5
+    currentQuestion = maxQuestion
+    const questionIds = [...Array(maxQuestion + 1).keys()]
+    questionIds.forEach(questionId => {
+      answers[questionId] = {}
+      correctAnswers[questionId] = answerKey[questionId]
     })
+    sessionData.forEach(student => {
+      students[student.eID] = {
+        firstName: student.firstName,
+        lastName: student.lastName,
+        studentId: student.eID,
+        excused: 0
+      }
+      questionIds.forEach(questionId => {
+        answers[questionId][student.eID] = student[questionId]
+      })
+    })
+    console.log('students')
+    console.log(students)
+    console.log('answers')
+    console.log(answers)
+    console.log('correctAnswers')
+    console.log(correctAnswers)
   })
 })
 
 async function tick () {
   const numStudentsConnected = (await io.allSockets()).size - 1
   const numStudentsAnswered = Object.keys(answered).length
-  sessions = fs.readdirSync(__dirname + '/public/sessions').reverse()
+  sessions = fs.readdirSync(__dirname + '/public/sessions').reverse().filter(s => s !== '.gitkeep')
   io.emit('updateClients', {
     numStudentsConnected,
     numStudentsAnswered,
@@ -174,7 +168,7 @@ function writeDataFile () {
   console.log('writeDataFile')
   const filePath = './public/sessions/' + sessionId + '/answers.csv'
   let csvString = 'eID,firstName,lastName,excused'
-  for (const i of Array(maxQuestion).keys()) { csvString += ',' + i }
+  for (const i of Array(maxQuestion + 1).keys()) { csvString += ',' + i }
   csvString += '\n'
   Object.keys(students).forEach(studentId => {
     const student = students[studentId]
@@ -201,19 +195,20 @@ async function writeGradeFile () {
   console.log('writeGradeFile')
   const sessionsPath = path.join(__dirname, 'public', 'sessions')
   sessions = fs.readdirSync(sessionsPath).filter(x => x !== '.gitkeep').reverse()
-  console.log('sessions =', sessions)
   const scores = {}
   sessions.forEach(async session => {
     const filePath = './public/sessions/' + session + '/answers.csv'
     const sessionData = await csvtojson().fromFile(filePath)
     const answerKey = sessionData.pop()
+    console.log(sessionData)
     const numQuestions = Object.keys(answerKey).length - 4
-    console.log('sessionData', sessionData)
-    console.log('answerKey', answerKey)
-    console.log('numQuestions', numQuestions)
+    console.log(session, 'numQuestions', numQuestions)
+    const questionIds = [...Array(numQuestions).keys()].reverse()
+    console.log('questionIds', questionIds)
     if (sessionData) {
-      for (const i of Array(numQuestions.length).keys()) {
+      for (const i of questionIds) {
         const questionName = `${i}-${session}`
+        console.log('questionName', questionName)
         const correctAnswer = answerKey[i]
         scores[questionName] = {}
         sessionData.forEach(student => {
@@ -241,7 +236,6 @@ async function writeGradeFile () {
     }
   })
   const roster = await csvtojson().fromFile('./grades/roster.csv')
-  console.log('roster', roster)
   let gradeString = 'firstName,lastName,eID,vNumber,attendance,average'
   for (const question in scores) { gradeString += ',' + question }
   gradeString += '\n'
@@ -252,20 +246,17 @@ async function writeGradeFile () {
       if (scores[question][student.eID]) {
         myScores.push(scores[question][student.eID])
         const sessionName = question.slice(question.length - 14, question.length)
-        console.log('sessionName', sessionName)
         mySessions.add(sessionName)
       } else {
         myScores.push(0)
       }
     }
-    console.log('mySessions', mySessions)
     const myAttendance = mySessions.size
-    const myAverage = average(myScores)
+    const myAverage = Math.ceil(average(myScores))
     gradeString += `${student.firstName},${student.lastName},${student.eID},${student.vNumber},${myAttendance},${myAverage}`
     myScores.forEach(score => { gradeString += ',' + score })
     gradeString += '\n'
   })
-  console.log(gradeString)
   fs.outputFile('./grades/grades.csv', gradeString)
 }
 
@@ -296,6 +287,8 @@ function getSummaryTable () {
 async function loadRoster () {
   console.log('loadRoster')
   const roster = await csvtojson().fromFile('./grades/roster.csv')
+  firstNames = []
+  lastNames = []
   roster.forEach(entry => {
     const eID = entry.eID
     firstNames[eID] = entry.firstName

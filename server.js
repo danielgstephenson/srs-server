@@ -66,8 +66,6 @@ io.on('connection', function (socket) {
   console.log(socket.id, 'connected')
   socket.on('updateServer', (msg) => {
     if (msg.state !== state) {
-      // console.log(msg.state)
-      // console.log(msg)
       if (msg.state === 'wait' && sessionId !== '') {
         answered = {}
         if (isFinite(parseFloat(msg.correctAnswer))) {
@@ -115,9 +113,7 @@ io.on('connection', function (socket) {
   socket.on('loadSession', async msg => {
     const filePath = './public/sessions/' + msg.sessionId + '/answers.csv'
     const sessionData = await csvtojson().fromFile(filePath)
-    socket.emit('sessionData', { sessionId: msg.sessionId, sessionData })
     const answerKey = sessionData.pop()
-    console.log('answerKey', answerKey)
     students = {}
     answers = []
     correctAnswers = []
@@ -139,12 +135,9 @@ io.on('connection', function (socket) {
         answers[questionId][student.eID] = student[questionId]
       })
     })
-    console.log('students')
-    console.log(students)
-    console.log('answers')
-    console.log(answers)
-    console.log('correctAnswers')
-    console.log(correctAnswers)
+    console.log('students', students)
+    console.log('answers', answers)
+    console.log('correctAnswers', correctAnswers)
   })
 })
 
@@ -200,15 +193,11 @@ async function writeGradeFile () {
     const filePath = './public/sessions/' + session + '/answers.csv'
     const sessionData = await csvtojson().fromFile(filePath)
     const answerKey = sessionData.pop()
-    console.log(sessionData)
     const numQuestions = Object.keys(answerKey).length - 4
-    console.log(session, 'numQuestions', numQuestions)
     const questionIds = [...Array(numQuestions).keys()].reverse()
-    console.log('questionIds', questionIds)
     if (sessionData) {
       for (const i of questionIds) {
         const questionName = `${i}-${session}`
-        console.log('questionName', questionName)
         const correctAnswer = answerKey[i]
         scores[questionName] = {}
         sessionData.forEach(student => {

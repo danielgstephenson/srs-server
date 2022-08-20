@@ -2,8 +2,9 @@ import express from 'express'
 import http from 'http'
 import https from 'https'
 import fs from 'fs-extra'
-import { Server } from 'socket.io'
+import csvtojson from 'csvtojson'
 import path from 'path'
+import { Server } from 'socket.io'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -15,8 +16,15 @@ const app = express()
 const staticPath = path.join(__dirname, 'public')
 const staticMiddleware = express.static(staticPath)
 app.use(staticMiddleware)
-const clientPath = path.join(__dirname, 'public', 'client.html')
-app.get('/', function (req, res) { res.sendFile(clientPath) })
+const clientHtmlPath = path.join(__dirname, 'public', 'client.html')
+app.get('/', function (req, res) { res.sendFile(clientHtmlPath) })
+const managerHtmlPath = path.join(__dirname, 'public', 'manager.html')
+app.get('/manager', function (req, res) { res.sendFile(managerHtmlPath) })
+const socketIoPath = path.join(__dirname, 'node_modules', 'socket.io', 'client-dist')
+app.get('/socketIo/:fileName', function (req, res) {
+  const filePath = path.join(socketIoPath, req.params.fileName)
+  res.sendFile(filePath)
+})
 
 function makeServer () {
   if (config.secure) {
@@ -31,6 +39,7 @@ function makeServer () {
 
 const server = makeServer()
 const io = new Server(server)
+io.path(staticPath)
 server.listen(config.port, () => {
   console.log(`Listening on :${config.port}`)
   setInterval(tick, 100)

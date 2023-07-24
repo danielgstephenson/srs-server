@@ -31,7 +31,9 @@ app.get('/socketIo/:fileName', function (req, res) {
 
 function makeServer () {
   if (config.secure) {
-    const httpServer = http.createServer(function (req, res) {
+    const httpApp = express()
+    const httpServer = new http.Server(httpApp)
+    httpApp.get('/', function (req, res) {
       return res.redirect('https://' + req.headers.host + req.url)
     })
     httpServer.listen(80)

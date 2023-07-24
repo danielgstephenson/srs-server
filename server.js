@@ -18,6 +18,7 @@ const staticMiddleware = express.static(staticPath)
 app.use(staticMiddleware)
 const clientHtmlPath = path.join(__dirname, 'public', 'client.html')
 app.get('/', function (req, res) {
+  console.log('req.secure', req.secure)
   res.sendFile(clientHtmlPath)
 })
 const managerHtmlPath = path.join(__dirname, 'public', 'manager.html')

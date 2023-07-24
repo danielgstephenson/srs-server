@@ -26,9 +26,10 @@ app.get('/socketIo/:fileName', function (req, res) {
   res.sendFile(filePath)
 })
 if (config.secure) {
+  app.enable('trust proxy')
   app.use((req, res, next) => {
-    if (req.secure) next()
-    else res.redirect(config.url + req.url)
+    console.log(req.secure)
+    req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
   })
 }
 

@@ -25,6 +25,12 @@ app.get('/socketIo/:fileName', function (req, res) {
   const filePath = path.join(socketIoPath, req.params.fileName)
   res.sendFile(filePath)
 })
+if (config.secure) {
+  app.use((req, res, next) => {
+    if (req.secure) next()
+    else res.redirect(config.url + req.url)
+  })
+}
 
 function makeServer () {
   if (config.secure) {

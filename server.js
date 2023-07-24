@@ -31,8 +31,8 @@ app.get('/socketIo/:fileName', function (req, res) {
 
 function makeServer () {
   if (config.secure) {
-    const httpServer = new http.Server(app)
-    httpServer.get('/', function (req, res) {
+    const httpApp = express()
+    httpApp.get('/', function (req, res) {
       return res.redirect('https://' + req.headers.host + req.url)
     })
     const key = fs.readFileSync('./srs-key.pem')

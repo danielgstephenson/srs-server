@@ -89,7 +89,8 @@ io.on('connection', function (socket) {
     const lastName = lastNames[eID]
     students[eID] = { firstName, lastName, answers: [] }
     console.log('login: ' + firstName + ' ' + lastName + ' ' + eID)
-    socket.emit('loginComplete')
+    const reply = { firstName, lastName }
+    socket.emit('loginComplete', reply)
   })
 
   socket.on('submitAnswer', msg => {

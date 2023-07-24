@@ -6,12 +6,15 @@ const questionDiv = document.getElementById('questionDiv')
 const answerDiv = document.getElementById('answerDiv')
 const answerInput = document.getElementById('answerInput')
 const changeDiv = document.getElementById('changeDiv')
+const nameDiv = document.getElementById('nameDiv')
 const socket = io()
 
 let loginComplete = false
 let answerComplete = false
 let eID
 let state = 'login'
+let firstName = 'SRS'
+let lastName = 'SRS'
 
 socket.on('updateClients', (msg) => {
   if (loginComplete) {
@@ -29,6 +32,9 @@ socket.on('updateClients', (msg) => {
 
 socket.on('loginComplete', (msg) => {
   console.log('loginComplete')
+  firstName = msg.firstName ? msg.firstName : 'Unknown'
+  lastName = msg.lastName ? msg.lastName : 'eID'
+  nameDiv.innerHTML = `${firstName} ${lastName}`
   loginComplete = true
 })
 
@@ -55,9 +61,7 @@ window.changeAnswer = () => {
 
 window.showDiv = (msg) => {
   loginForm.style.display = 'none'
-  if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-    document.title = 'Q' + msg.currentQuestion
-  } else document.title = 'SRS'
+  document.title = 'SRS'
   if (msg.state === 'showQuestion') {
     waitDiv.style.display = 'none'
     questionDiv.style.display = 'block'

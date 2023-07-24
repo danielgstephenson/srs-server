@@ -20,22 +20,22 @@ img {
   text-align: center;
   margin: 3px
 }
-.waitDiv {
+#waitDiv {
   font: Consolas;
   font-size: 20vh;
   margin-top: 20vh;
   margin-bottom: 40vh;
 }
+#nameDiv {
+  font: Consolas;
+  font-size: 5vh;
+} 
 .interface {
   font: Consolas;
   font-size: 10vh;
   float: center;
   text-align: center;
   margin: 3px
-}
-.imageDiv {
-  width: 100vw;
-  height: 80vh;
 }
 .contain {
   object-fit: contain;

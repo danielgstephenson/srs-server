@@ -31,10 +31,10 @@ app.get('/socketIo/:fileName', function (req, res) {
 
 function makeServer () {
   if (config.secure) {
-    const httpApp = express()
-    httpApp.get('/', function (req, res) {
+    const httpServer = http.createServer(function (req, res) {
       return res.redirect('https://' + req.headers.host + req.url)
     })
+    httpServer.listen(80)
     const key = fs.readFileSync('./srs-key.pem')
     const cert = fs.readFileSync('./srs-cert.pem')
     const credentials = { key, cert }

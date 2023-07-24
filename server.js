@@ -28,6 +28,7 @@ app.get('/socketIo/:fileName', function (req, res) {
   res.sendFile(filePath)
 })
 if (config.secure) {
+  console.log('config.secure', config.secure)
   app.enable('trust proxy')
   app.use((req, res, next) => {
     console.log('req.secure', req.secure)

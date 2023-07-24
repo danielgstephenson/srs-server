@@ -17,13 +17,8 @@ const staticPath = path.join(__dirname, 'public')
 const staticMiddleware = express.static(staticPath)
 app.use(staticMiddleware)
 const clientHtmlPath = path.join(__dirname, 'public', 'client.html')
-app.enable('trust proxy')
 app.get('/', function (req, res) {
-  if (config.secure && !req.secure) {
-    res.redirect('https://' + req.headers.host + req.url)
-  } else {
-    res.sendFile(clientHtmlPath)
-  }
+  res.sendFile(clientHtmlPath)
 })
 const managerHtmlPath = path.join(__dirname, 'public', 'manager.html')
 app.get('/manager', function (req, res) { res.sendFile(managerHtmlPath) })
@@ -35,7 +30,7 @@ app.get('/socketIo/:fileName', function (req, res) {
 if (config.secure) {
   app.enable('trust proxy')
   app.use((req, res, next) => {
-    console.log(req.secure)
+    console.log('req.secure', req.secure)
     req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
   })
 }

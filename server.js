@@ -28,17 +28,13 @@ app.get('/socketIo/:fileName', function (req, res) {
   const filePath = path.join(socketIoPath, req.params.fileName)
   res.sendFile(filePath)
 })
-if (config.secure) {
-  console.log('config.secure', config.secure)
-  app.enable('trust proxy')
-  app.use((req, res, next) => {
-    console.log('req.secure', req.secure)
-    req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
-  })
-}
 
 function makeServer () {
   if (config.secure) {
+    const httpServer = express.createServer()
+    httpServer.all('*', function (req, res) {
+      return res.redirect('https://' + req.headers.host + req.url)
+    })
     const key = fs.readFileSync('./srs-key.pem')
     const cert = fs.readFileSync('./srs-cert.pem')
     const credentials = { key, cert }

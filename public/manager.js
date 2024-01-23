@@ -8,106 +8,39 @@ const correctAnswerDiv = document.getElementById('correctAnswerDiv')
 const correctAnswerInput = document.getElementById('correctAnswerInput')
 const answerCountText = document.getElementById('answerCountText')
 const summaryText = document.getElementById('summaryText')
-const selectQuestionDiv = document.getElementById('selectQuestionDiv')
-const selectQuestionDropdown = document.getElementById('selectQuestionDropdown')
-const selectSessionDiv = document.getElementById('selectSessionDiv')
-const selectSessionDropdown = document.getElementById('selectSessionDropdown')
 
 let sessionId = ''
-let state = 'startup'
-let maxQuestion = -1
-let currentQuestion = -1
 let correctAnswer = ''
-let sessions = []
-
-function tick () {
-  socket.emit('updateServer', {
-    state,
-    sessionId,
-    currentQuestion,
-    correctAnswer
-  })
-}
-
-setInterval(tick, 250)
 
 socket.on('updateClients', msg => {
-  if (msg.sessionId === sessionId) {
-    window.showDiv(msg)
-    window.setupQuestionDropdown(msg)
-    window.setupSessionDropdown(msg)
-    answerCountText.innerHTML = msg.numStudentsAnswered + '/' + msg.numStudentsConnected
-    summaryText.innerHTML = msg.summary
-    sessions = msg.sessions
-  }
-})
-
-socket.on('sessionData', msg => {
-  console.log(msg)
-  sessionId = msg.sessionId
-  state = 'wait'
+  if (msg.state !== 'startup') sessionId = msg.sessionId
+  window.showDiv(msg)
+  answerCountText.innerHTML = msg.numStudentsAnswered + '/' + msg.numStudentsConnected
+  summaryText.innerHTML = msg.summary
 })
 
 window.newSession = () => {
   sessionId = window.getDateString()
-  state = 'wait'
-}
-
-window.selectSession = () => {
-  state = 'selectSession'
-}
-window.cancelLoadSession = () => {
-  state = 'startup'
-}
-
-window.loadSession = () => {
-  if (selectSessionDropdown.firstChild) {
-    socket.emit('loadSession', { sessionId: selectSessionDropdown.value })
-  }
+  socket.emit('newSession', { sessionId })
 }
 
 window.newQuestion = () => {
-  currentQuestion = maxQuestion + 1
   correctAnswerInput.value = ''
   correctAnswer = ''
-  state = 'showQuestion'
+  socket.emit('newQuestion', { sessionId })
 }
 
 window.hideQuestion = () => {
-  state = 'correctAnswer'
+  socket.emit('hideQuestion', { sessionId })
 }
 
 window.showQuestion = () => {
-  state = 'showQuestion'
+  socket.emit('showQuestion', { sessionId })
 }
 
 window.submitCorrectAnswer = () => {
   correctAnswer = correctAnswerInput.value
-  state = 'wait'
-}
-
-window.selectQuestion = () => {
-  correctAnswerInput.value = ''
-  correctAnswer = ''
-  state = 'selectQuestion'
-}
-
-window.loadQuestion = () => {
-  if (selectQuestionDropdown.firstChild) {
-    currentQuestion = selectQuestionDropdown.value
-    state = 'showQuestion'
-  }
-}
-
-window.answerQuestion = () => {
-  if (selectQuestionDropdown.firstChild) {
-    currentQuestion = selectQuestionDropdown.value
-    state = 'correctAnswer'
-  }
-}
-
-window.cancelLoadQuestion = () => {
-  state = 'wait'
+  socket.emit('submitCorrectAnswer', { sessionId, correctAnswer })
 }
 
 window.showDiv = (msg) => {
@@ -122,43 +55,12 @@ window.showDiv = (msg) => {
     selectQuestion: 'none',
     selectSession: 'none'
   }
+  console.log('msg.state', msg.state)
   stateMap[msg.state] = 'block'
   startupDiv.style.display = stateMap.startup
   waitDiv.style.display = stateMap.wait
   showQuestionDiv.style.display = stateMap.showQuestion
   correctAnswerDiv.style.display = stateMap.correctAnswer
-  selectQuestionDiv.style.display = stateMap.selectQuestion
-  selectSessionDiv.style.display = stateMap.selectSession
-}
-
-window.setupQuestionDropdown = (msg) => {
-  if (maxQuestion !== msg.maxQuestion && msg.maxQuestion >= 0) {
-    maxQuestion = msg.maxQuestion
-    while (selectQuestionDropdown.firstChild) {
-      selectQuestionDropdown.removeChild(selectQuestionDropdown.firstChild)
-    }
-    for (let i = maxQuestion; i >= 0; i--) {
-      const option = document.createElement('option')
-      option.value = i
-      option.text = i
-      selectQuestionDropdown.appendChild(option)
-    }
-  }
-}
-
-window.setupSessionDropdown = (msg) => {
-  if (sessions.length !== msg.sessions.length && sessions.length >= 0) {
-    sessions = msg.sessions
-    while (selectSessionDropdown.firstChild) {
-      selectSessionDropdown.removeChild(selectSessionDropdown.firstChild)
-    }
-    sessions.forEach((session) => {
-      const option = document.createElement('option')
-      option.value = session
-      option.text = session
-      selectSessionDropdown.appendChild(option)
-    })
-  }
 }
 
 window.getDateString = function () {

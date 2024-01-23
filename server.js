@@ -57,13 +57,13 @@ let sessionId = ''
 let state = 'startup'
 let currentQuestion = -1
 let maxQuestion = -1
-let students = {}
-let answers = []
-let answered = {}
-let correctAnswers = []
 let sessions = []
 let firstNames = {}
 let lastNames = {}
+const students = {}
+const answers = []
+const answered = {}
+const correctAnswers = []
 
 function average (array) {
   if (array.length === 0) return 0
@@ -72,25 +72,36 @@ function average (array) {
 
 io.on('connection', function (socket) {
   console.log(socket.id, 'connected')
-  socket.on('updateServer', (msg) => {
-    if (msg.state !== state) {
-      if (msg.state === 'wait' && sessionId !== '') {
-        answered = {}
-        if (isFinite(parseFloat(msg.correctAnswer))) {
-          correctAnswers[currentQuestion] = String(parseFloat(msg.correctAnswer))
-        } else {
-          correctAnswers[currentQuestion] = msg.correctAnswer.toLowerCase()
-        }
-        console.log('correctAnswer ' + correctAnswers[currentQuestion])
-        writeDataFile()
-      }
-    }
-    state = msg.state
+  socket.on('newSession', msg => {
     sessionId = msg.sessionId
-    currentQuestion = msg.currentQuestion
-    maxQuestion = Math.max(maxQuestion, currentQuestion)
+    state = 'wait'
   })
-
+  socket.on('newQuestion', msg => {
+    sessionId = msg.sessionId
+    currentQuestion += 1
+    state = 'showQuestion'
+    console.log(`Question ${currentQuestion + 1}`)
+  })
+  socket.on('hideQuestion', msg => {
+    sessionId = msg.sessionId
+    state = 'correctAnswer'
+  })
+  socket.on('showQuestion', msg => {
+    sessionId = msg.sessionId
+    state = 'showQuestion'
+  })
+  socket.on('submitCorrectAnswer', msg => {
+    sessionId = msg.sessionId
+    if (isFinite(parseFloat(msg.correctAnswer))) {
+      correctAnswers[currentQuestion] = String(parseFloat(msg.correctAnswer))
+    } else {
+      correctAnswers[currentQuestion] = msg.correctAnswer.toLowerCase()
+    }
+    state = 'wait'
+    console.log(`correctAnswer: ${correctAnswers[currentQuestion]}`)
+    maxQuestion = Math.max(maxQuestion, currentQuestion)
+    writeDataFile()
+  })
   socket.on('login', msg => {
     const eID = msg.eID
     const firstName = firstNames[eID]
@@ -100,7 +111,6 @@ io.on('connection', function (socket) {
     const reply = { firstName, lastName }
     socket.emit('loginComplete', reply)
   })
-
   socket.on('submitAnswer', msg => {
     const eID = msg.eID
     const firstName = firstNames[eID]
@@ -115,37 +125,12 @@ io.on('connection', function (socket) {
     } else {
       answers[currentQuestion][eID] = msg.answer.toLowerCase()
     }
-    socket.emit('answerReceived')
+    const reply = {
+      answer: msg.answer,
+      currentQuestion
+    }
+    socket.emit('answerReceived', reply)
     console.log('submitAnswer ' + eID + ' ' + firstNames[eID] + ' ' + lastNames[eID] + ' : ' + msg.answer)
-  })
-
-  socket.on('loadSession', async msg => {
-    const filePath = './public/sessions/' + msg.sessionId + '/answers.csv'
-    const sessionData = await csvtojson().fromFile(filePath)
-    const answerKey = sessionData.pop()
-    students = {}
-    answers = []
-    correctAnswers = []
-    maxQuestion = Object.keys(answerKey).length - 5
-    currentQuestion = maxQuestion
-    const questionIds = [...Array(maxQuestion + 1).keys()]
-    questionIds.forEach(questionId => {
-      answers[questionId] = {}
-      correctAnswers[questionId] = answerKey[questionId]
-    })
-    sessionData.forEach(student => {
-      students[student.eID] = {
-        firstName: student.firstName,
-        lastName: student.lastName,
-        eID: student.eID
-      }
-      questionIds.forEach(questionId => {
-        answers[questionId][student.eID] = student[questionId]
-      })
-    })
-    console.log('students', students)
-    console.log('answers', answers)
-    console.log('correctAnswers', correctAnswers)
   })
 })
 
@@ -169,7 +154,7 @@ function writeDataFile () {
   console.log('writeDataFile')
   const filePath = './public/sessions/' + sessionId + '/answers.csv'
   let csvString = 'eID,firstName,lastName,excused'
-  for (const i of Array(maxQuestion + 1).keys()) { csvString += ',' + i }
+  for (const i of Array(maxQuestion + 1).keys()) { csvString += `,${i + 1}` }
   csvString += '\n'
   Object.keys(students).forEach(eID => {
     const student = students[eID]

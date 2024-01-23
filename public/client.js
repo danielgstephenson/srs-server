@@ -6,11 +6,14 @@ const questionDiv = document.getElementById('questionDiv')
 const answerDiv = document.getElementById('answerDiv')
 const answerInput = document.getElementById('answerInput')
 const changeDiv = document.getElementById('changeDiv')
+const infoDiv = document.getElementById('infoDiv')
 const nameDiv = document.getElementById('nameDiv')
 const socket = io()
 
 let loginComplete = false
 let answerComplete = false
+let currentQuestion = 1
+let submittedAnswer = ''
 let eID
 let state = 'login'
 let firstName = 'SRS'
@@ -22,11 +25,12 @@ socket.on('updateClients', (msg) => {
       state = msg.state
       console.log(msg.state)
     }
-    window.showDiv(msg)
+    currentQuestion = msg.currentQuestion
     if (state === 'wait') {
       answerInput.value = ''
       answerComplete = false
     }
+    window.showDiv(msg)
   }
 })
 
@@ -34,12 +38,14 @@ socket.on('loginComplete', (msg) => {
   console.log('loginComplete')
   firstName = msg.firstName ? msg.firstName : 'Unknown'
   lastName = msg.lastName ? msg.lastName : 'eID'
-  nameDiv.innerHTML = `${firstName} ${lastName}`
+  nameDiv.innerHTML = `${firstName} ${lastName} <br>`
   loginComplete = true
 })
 
 socket.on('answerReceived', (msg) => {
   console.log('answerReceived')
+  submittedAnswer = msg.answer
+  currentQuestion = msg.currentQuestion
   answerComplete = true
 })
 
@@ -62,10 +68,13 @@ window.changeAnswer = () => {
 window.showDiv = (msg) => {
   loginForm.style.display = 'none'
   document.title = 'SRS'
+  infoDiv.innerHTML = `Question ${currentQuestion + 1} <br>`
   if (msg.state === 'showQuestion') {
     waitDiv.style.display = 'none'
     questionDiv.style.display = 'block'
+    infoDiv.style.display = 'block'
     if (answerComplete) {
+      infoDiv.innerHTML += `Your Answer: ${submittedAnswer} <br>`
       answerDiv.style.display = 'none'
       changeDiv.style.display = 'block'
     } else {
@@ -75,6 +84,7 @@ window.showDiv = (msg) => {
   } else {
     waitDiv.style.display = 'block'
     questionDiv.style.display = 'none'
+    infoDiv.style.display = 'none'
   }
 }
 

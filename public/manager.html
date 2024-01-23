@@ -6,11 +6,9 @@
 <body>
   <div id='startupDiv'>
     <button type="button" onclick="window.newSession()">New Session</button>
-    <button type="button" onclick="window.selectSession()">Load Session</button>
   </div>
   <div id='waitDiv' style='display:none;'>
     <button type="button" onclick="window.newQuestion()">New Question</button>
-    <button type="button" onclick="window.selectQuestion()">Load Question</button>
   </div>
   <div id='showQuestionDiv' style='display:none;'>
     <b id=answerCountText> 0/0 </b> <button type="button" onclick="hideQuestion()">Hide Question</button> <br>
@@ -20,17 +18,6 @@
     <button type="button" onclick="window.submitCorrectAnswer()">Submit</button>
     <button type="button" onclick="window.showQuestion()">Show</button> <br>
     <b id='summaryText'></b>
-  </div>
-  <div id='selectQuestionDiv' style='display:none;'>
-    <select id='selectQuestionDropdown'></select>
-    <button type="button" onclick="window.loadQuestion()">Show</button>
-    <button type="button" onclick="window.answerQuestion()">Answer</button>
-    <button type="button" onclick="window.cancelLoadQuestion()">Cancel</button>
-  </div>
-  <div id='selectSessionDiv' style='display:none;'>
-    <select id='selectSessionDropdown'></select>
-    <button type="button" onclick="window.loadSession()">Load</button>
-    <button type="button" onclick="window.cancelLoadSession()">Cancel</button>
   </div>
   <script src="manager.js" type="module"></script>
 </body>

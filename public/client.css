@@ -29,6 +29,10 @@ img {
 #nameDiv {
   font: Consolas;
   font-size: 5vh;
+}
+#infoDiv {
+  font: Consolas;
+  font-size: 5vh;
 } 
 .interface {
   font: Consolas;

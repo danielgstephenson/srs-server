@@ -190,7 +190,7 @@ async function writeGradeFile () {
     const questionIds = [...Array(numQuestions).keys()].reverse()
     if (sessionData) {
       for (const i of questionIds) {
-        const questionName = `${i}-${session}`
+        const questionName = `${i + 1}-${session}`
         const correctAnswer = answerKey[i]
         scores[questionName] = {}
         sessionData.forEach(student => {

@@ -116,7 +116,8 @@ io.on('connection', function (socket) {
     const firstName = firstNames[eID]
     const lastName = lastNames[eID]
     students[eID] = { firstName, lastName, eID }
-    answered[socket.id] = true
+    answered[eID] = true
+    console.log(answered)
     if (answers[currentQuestion] === undefined) {
       answers[currentQuestion] = {}
     }
@@ -135,11 +136,9 @@ io.on('connection', function (socket) {
 })
 
 async function tick () {
-  const numStudentsConnected = (await io.allSockets()).size - 1
   const numStudentsAnswered = Object.keys(answered).length
   sessions = fs.readdirSync(__dirname + '/public/sessions').reverse().filter(s => s !== '.gitkeep')
   io.emit('updateClients', {
-    numStudentsConnected,
     numStudentsAnswered,
     summary: getSummaryTable(),
     sessionId,

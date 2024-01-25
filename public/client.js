@@ -67,7 +67,9 @@ window.changeAnswer = () => {
 
 window.showDiv = (msg) => {
   loginForm.style.display = 'none'
-  document.title = 'SRS'
+  if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
+    document.title = `Q${msg.currentQuestion + 1}`
+  } else document.title = 'SRS'
   infoDiv.innerHTML = `Question ${currentQuestion + 1} <br>`
   if (msg.state === 'showQuestion') {
     waitDiv.style.display = 'none'

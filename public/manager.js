@@ -15,7 +15,7 @@ let correctAnswer = ''
 socket.on('updateClients', msg => {
   if (msg.state !== 'startup') sessionId = msg.sessionId
   window.showDiv(msg)
-  answerCountText.innerHTML = msg.numStudentsAnswered + '/' + msg.numStudentsConnected
+  answerCountText.innerHTML = msg.numStudentsAnswered + ' '
   summaryText.innerHTML = msg.summary
 })
 
@@ -45,7 +45,7 @@ window.submitCorrectAnswer = () => {
 
 window.showDiv = (msg) => {
   if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-    document.title = 'Q' + msg.currentQuestion
+    document.title = `Q${msg.currentQuestion + 1}`
   } else document.title = 'SRS'
   const stateMap = {
     startup: 'none',

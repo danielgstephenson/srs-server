@@ -79,6 +79,9 @@ io.on('connection', function (socket) {
   socket.on('newQuestion', msg => {
     sessionId = msg.sessionId
     currentQuestion += 1
+    Object.keys(answered).forEach(eID => {
+      answered[eID] = false
+    })
     state = 'showQuestion'
     console.log(`Question ${currentQuestion + 1}`)
   })
@@ -136,7 +139,7 @@ io.on('connection', function (socket) {
 })
 
 async function tick () {
-  const numStudentsAnswered = Object.keys(answered).length
+  const numStudentsAnswered = Object.values(answered).filter(x => x).length
   sessions = fs.readdirSync(__dirname + '/public/sessions').reverse().filter(s => s !== '.gitkeep')
   io.emit('updateClients', {
     numStudentsAnswered,

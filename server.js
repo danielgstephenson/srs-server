@@ -122,11 +122,11 @@ io.on('connection', function (socket) {
     answered[eID] = true
     const answeredNames = Object.keys(answered)
       .filter(eId => answered[eId])
-      .map(eId => `${firstNames[eId]} ${lastNames[eId]}`)
+      .map(eId => `${firstNames[eId]} ${lastNames[eId]} ${eId}`)
       .sort()
     const waitingNames = Object.keys(answered)
       .filter(eId => !answered[eId])
-      .map(eId => `${firstNames[eId]} ${lastNames[eId]}`)
+      .map(eId => `${firstNames[eId]} ${lastNames[eId]} ${eId}`)
       .sort()
     console.log('answered', answeredNames)
     console.log('waiting', waitingNames)

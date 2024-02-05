@@ -120,7 +120,16 @@ io.on('connection', function (socket) {
     const lastName = lastNames[eID]
     students[eID] = { firstName, lastName, eID }
     answered[eID] = true
-    console.log(answered)
+    const answeredNames = Object.keys(answered)
+      .filter(eId => answered[eId])
+      .map(eId => `${firstNames[eId]} ${lastNames[eId]}`)
+      .sort()
+    const waitingNames = Object.keys(answered)
+      .filter(eId => !answered[eId])
+      .map(eId => `${firstNames[eId]} ${lastNames[eId]}`)
+      .sort()
+    console.log('answered', answeredNames)
+    console.log('waiting', waitingNames)
     if (answers[currentQuestion] === undefined) {
       answers[currentQuestion] = {}
     }

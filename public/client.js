@@ -49,6 +49,12 @@ socket.on('answerReceived', (msg) => {
   answerComplete = true
 })
 
+window.onkeydown = event => {
+  if (event.key === 'Enter' && questionDiv.style.display === 'block') {
+    window.submitAnswer()
+  }
+}
+
 window.login = () => {
   console.log('login')
   eID = loginForm.eIdInput.value.toLowerCase().split(' ').join('')

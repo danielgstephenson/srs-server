@@ -188,7 +188,7 @@ function writeDataFile () {
 }
 
 async function writeGradeFile () {
-  loadRoster()
+  await loadRoster()
   console.log('writeGradeFile')
   const sessionsPath = path.join(__dirname, 'public', 'sessions')
   sessions = fs.readdirSync(sessionsPath).filter(x => x !== '.gitkeep').reverse()
@@ -280,6 +280,7 @@ function getSummaryTable () {
 async function loadRoster () {
   console.log('loadRoster')
   const roster = await csvtojson().fromFile('./grades/roster.csv')
+  console.log('roster', roster)
   firstNames = []
   lastNames = []
   roster.forEach(entry => {

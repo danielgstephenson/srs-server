@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Cache-Control" content="no-store">
+    <title>SRS</title>
+    <link rel="stylesheet" href="client.css">
+    <link rel="shortcut icon" type="image/x-icon" href="circle.ico" />
+  </head>
+  <body>
+    <form id="loginForm" class='login' onsubmit="return login()">
+      eID: <input id="eIdInput" class='login' type="text" required>
+      <input id="loginButton" type="submit" class='login' value="Submit"><br>
+      <p style="font-size:50%; margin: 5% 10%;" >
+        Your eID is the part of your VCU email before the "@" symbol.<br>
+        If your VCU email was smithj@vcu.edu then your eID would be smithj.<br>
+      </p>
+    </form>
+    <div id="nameDiv"></div>
+    <div id="infoDiv"></div>
+    <div id=waitDiv style='display:none;'>
+      Please Wait
+    </div>
+    <div id=questionDiv style='display:none;'>
+      <div id='answerDiv' class="interface">
+        Your Answer: </br>
+        <input id='answerInput' class="interface" size=5> </br>
+        <button id='submitButton' type="button" class="interface" onclick='submitAnswer()'>Submit</button>
+      </div>
+      <div id='changeDiv' class="interface" style='display:none;'> 
+        <button id='changeButton' type="button" class="interface" onclick='changeAnswer()'>Change Answer</button>
+      </div>
+    </div>
+    <script src="client.js" type="module"></script>
+  </body>
+</html>

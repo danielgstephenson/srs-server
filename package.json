@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "build:server": "npx tsc -build ./src",
-    "build:client": "npx parcel build ./src/client/client.html --dist-dir \"dist/client\"",
-    "build:manager": "npx parcel build ./src/manager/manager.html --dist-dir \"dist/manager\"",
+    "build:client": "npx parcel build ./src/public/client.html --dist-dir \"dist/public\"",
+    "build:manager": "npx parcel build ./src/public/manager.html --dist-dir \"dist/public\"",
     "build": "npm run build:server && npm run build:client && npm run build:manager",
     "start": "node ./dist",
     "dev": "npm run build && npm run start"

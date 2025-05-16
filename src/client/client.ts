@@ -1,20 +1,20 @@
-import { io } from './socketIo/socket.io.esm.min.js'
+import { io } from 'socket.io-client'
 
-const loginForm = document.getElementById('loginForm')
-const waitDiv = document.getElementById('waitDiv')
-const questionDiv = document.getElementById('questionDiv')
-const answerDiv = document.getElementById('answerDiv')
-const answerInput = document.getElementById('answerInput')
-const changeDiv = document.getElementById('changeDiv')
-const infoDiv = document.getElementById('infoDiv')
-const nameDiv = document.getElementById('nameDiv')
+const loginForm = document.getElementById('loginForm') as HTMLFormElement
+const answerInput = document.getElementById('answerInput') as HTMLInputElement
+const waitDiv = document.getElementById('waitDiv') as HTMLDivElement
+const questionDiv = document.getElementById('questionDiv') as HTMLDivElement
+const answerDiv = document.getElementById('answerDiv') as HTMLDivElement
+const changeDiv = document.getElementById('changeDiv') as HTMLDivElement
+const infoDiv = document.getElementById('infoDiv') as HTMLDivElement
+const nameDiv = document.getElementById('nameDiv') as HTMLDivElement
 const socket = io()
 
 let loginComplete = false
 let answerComplete = false
 let currentQuestion = 1
 let submittedAnswer = ''
-let eID
+let eID = ''
 let state = 'login'
 let firstName = 'SRS'
 let lastName = 'SRS'
@@ -30,7 +30,7 @@ socket.on('updateClients', (msg) => {
       answerInput.value = ''
       answerComplete = false
     }
-    window.showDiv(msg)
+    showDiv(msg)
   }
 })
 
@@ -49,29 +49,29 @@ socket.on('answerReceived', (msg) => {
   answerComplete = true
 })
 
-window.onkeydown = event => {
+const onkeydown = (event: any) => {
   if (event.key === 'Enter' && questionDiv.style.display === 'block') {
-    window.submitAnswer()
+    submitAnswer()
   }
 }
 
-window.login = () => {
+const login = () => {
   console.log('login')
   eID = loginForm.eIdInput.value.toLowerCase().split(' ').join('')
   socket.emit('login', { eID })
   return false
 }
 
-window.submitAnswer = () => {
+const submitAnswer = () => {
   console.log('submitAnswer')
   socket.emit('submitAnswer', { answer: answerInput.value, eID })
 }
 
-window.changeAnswer = () => {
+const changeAnswer = () => {
   answerComplete = false
 }
 
-window.showDiv = (msg) => {
+const showDiv = (msg: any) => {
   loginForm.style.display = 'none'
   if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
     document.title = `Q${msg.currentQuestion + 1}`

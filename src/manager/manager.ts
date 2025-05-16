@@ -1,49 +1,49 @@
-import { io } from './socketIo/socket.io.esm.min.js'
+import { io } from 'socket.io-client'
 const socket = io()
 
-const startupDiv = document.getElementById('startupDiv')
-const waitDiv = document.getElementById('waitDiv')
-const showQuestionDiv = document.getElementById('showQuestionDiv')
-const correctAnswerDiv = document.getElementById('correctAnswerDiv')
-const correctAnswerInput = document.getElementById('correctAnswerInput')
-const answerCountText = document.getElementById('answerCountText')
-const summaryText = document.getElementById('summaryText')
+const startupDiv = document.getElementById('startupDiv') as HTMLDivElement
+const waitDiv = document.getElementById('waitDiv') as HTMLDivElement
+const showQuestionDiv = document.getElementById('showQuestionDiv') as HTMLDivElement
+const correctAnswerDiv = document.getElementById('correctAnswerDiv') as HTMLDivElement
+const correctAnswerInput = document.getElementById('correctAnswerInput') as HTMLInputElement
+const answerCountText = document.getElementById('answerCountText') as HTMLSpanElement
+const summaryText = document.getElementById('summaryText') as HTMLSpanElement
 
 let sessionId = ''
 let correctAnswer = ''
 
 socket.on('updateClients', msg => {
   if (msg.state !== 'startup') sessionId = msg.sessionId
-  window.showDiv(msg)
+  showDiv(msg)
   answerCountText.innerHTML = msg.numStudentsAnswered + ' '
   summaryText.innerHTML = msg.summary
 })
 
-window.newSession = () => {
-  sessionId = window.getDateString()
+const newSession = () => {
+  sessionId = getDateString()
   socket.emit('newSession', { sessionId })
 }
 
-window.newQuestion = () => {
+const newQuestion = () => {
   correctAnswerInput.value = ''
   correctAnswer = ''
   socket.emit('newQuestion', { sessionId })
 }
 
-window.hideQuestion = () => {
+const hideQuestion = () => {
   socket.emit('hideQuestion', { sessionId })
 }
 
-window.showQuestion = () => {
+const showQuestion = () => {
   socket.emit('showQuestion', { sessionId })
 }
 
-window.submitCorrectAnswer = () => {
+const submitCorrectAnswer = () => {
   correctAnswer = correctAnswerInput.value
   socket.emit('submitCorrectAnswer', { sessionId, correctAnswer })
 }
 
-window.showDiv = (msg) => {
+const showDiv = (msg: any) => {
   if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
     document.title = `Q${msg.currentQuestion + 1}`
   } else document.title = 'SRS'
@@ -56,15 +56,20 @@ window.showDiv = (msg) => {
     selectSession: 'none'
   }
   console.log('msg.state', msg.state)
-  stateMap[msg.state] = 'block'
+  if(msg.state === 'startup') stateMap.startup = 'block'
+  if(msg.state === 'wait') stateMap.wait = 'block'
+  if(msg.state === 'showQuestion') stateMap.showQuestion = 'block'
+  if(msg.state === 'correctAnswer') stateMap.correctAnswer = 'block'
+  if(msg.state === 'selectQuestion') stateMap.selectQuestion = 'block'
+  if(msg.state === 'selectSession') stateMap.selectSession = 'block'
   startupDiv.style.display = stateMap.startup
   waitDiv.style.display = stateMap.wait
   showQuestionDiv.style.display = stateMap.showQuestion
   correctAnswerDiv.style.display = stateMap.correctAnswer
 }
 
-window.getDateString = function () {
-  const makeTwoDigits = function (x) {
+const getDateString = function () {
+  const makeTwoDigits = function (x: number) {
     const y = Math.round(x)
     if (y > 9) return String(y)
     else return String('0' + y)

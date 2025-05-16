@@ -11,14 +11,14 @@
     <button type="button" onclick="window.newQuestion()">New Question</button>
   </div>
   <div id='showQuestionDiv' style='display:none;'>
-    <b id=answerCountText> 0/0 </b> <button type="button" onclick="hideQuestion()">Hide Question</button> <br>
+    <span id=answerCountText> 0/0 </span> <button type="button" onclick="hideQuestion()">Hide Question</button> <br>
   </div>
   <div id='correctAnswerDiv' style='display:none;'>
     Correct:<input id='correctAnswerInput' size=5>
     <button type="button" onclick="window.submitCorrectAnswer()">Submit</button>
     <button type="button" onclick="window.showQuestion()">Show</button> <br>
-    <b id='summaryText'></b>
+    <span id='summaryText'></span>
   </div>
-  <script src="manager.js" type="module"></script>
+  <script src="manager.ts" type="module"></script>
 </body>
 </html>

@@ -8,7 +8,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="circle.ico" />
   </head>
   <body>
-    <form id="loginForm" class='login' onsubmit="return login()">
+    <form id="loginForm" class='login'>
       eID: <input id="eIdInput" class='login' type="text" required>
       <input id="loginButton" type="submit" class='login' value="Submit"><br>
       <p style="font-size:50%; margin: 5% 10%;" >
@@ -25,12 +25,12 @@
       <div id='answerDiv' class="interface">
         Your Answer: </br>
         <input id='answerInput' class="interface" size=5> </br>
-        <button id='submitButton' type="button" class="interface" onclick='submitAnswer()'>Submit</button>
+        <button id='submitButton' type="button" class="interface">Submit</button>
       </div>
       <div id='changeDiv' class="interface" style='display:none;'> 
-        <button id='changeButton' type="button" class="interface" onclick='changeAnswer()'>Change Answer</button>
+        <button id='changeButton' type="button" class="interface">Change Answer</button>
       </div>
     </div>
-    <script src="client.ts" type="module"></script>
+    <script src="clientIndex.ts" type="module"></script>
   </body>
 </html>

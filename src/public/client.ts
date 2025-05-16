@@ -1,101 +1,117 @@
 import { io } from 'socket.io-client'
+import { ServerUpdateClient } from '../messages'
 
-const loginForm = document.getElementById('loginForm') as HTMLFormElement
-const answerInput = document.getElementById('answerInput') as HTMLInputElement
-const waitDiv = document.getElementById('waitDiv') as HTMLDivElement
-const questionDiv = document.getElementById('questionDiv') as HTMLDivElement
-const answerDiv = document.getElementById('answerDiv') as HTMLDivElement
-const changeDiv = document.getElementById('changeDiv') as HTMLDivElement
-const infoDiv = document.getElementById('infoDiv') as HTMLDivElement
-const nameDiv = document.getElementById('nameDiv') as HTMLDivElement
-const socket = io()
+export class Client {
+  loginForm = document.getElementById('loginForm') as HTMLFormElement
+  answerInput = document.getElementById('answerInput') as HTMLInputElement
+  waitDiv = document.getElementById('waitDiv') as HTMLDivElement
+  questionDiv = document.getElementById('questionDiv') as HTMLDivElement
+  answerDiv = document.getElementById('answerDiv') as HTMLDivElement
+  changeDiv = document.getElementById('changeDiv') as HTMLDivElement
+  infoDiv = document.getElementById('infoDiv') as HTMLDivElement
+  nameDiv = document.getElementById('nameDiv') as HTMLDivElement
+  submitButton = document.getElementById('submitButton') as HTMLButtonElement
+  changeButton = document.getElementById('changeButton') as HTMLButtonElement
+  socket = io()
 
-let loginComplete = false
-let answerComplete = false
-let currentQuestion = 1
-let submittedAnswer = ''
-let eID = ''
-let state = 'login'
-let firstName = 'SRS'
-let lastName = 'SRS'
-
-socket.on('updateClients', (msg) => {
-  if (loginComplete) {
-    if (state !== msg.state) {
-      state = msg.state
-      console.log(msg.state)
-    }
-    currentQuestion = msg.currentQuestion
-    if (state === 'wait') {
-      answerInput.value = ''
-      answerComplete = false
-    }
-    showDiv(msg)
-  }
-})
-
-socket.on('loginComplete', (msg) => {
-  console.log('loginComplete')
-  firstName = msg.firstName ? msg.firstName : 'Unknown'
-  lastName = msg.lastName ? msg.lastName : 'eID'
-  nameDiv.innerHTML = `${firstName} ${lastName} <br>`
-  loginComplete = true
-})
-
-socket.on('answerReceived', (msg) => {
-  console.log('answerReceived')
-  submittedAnswer = msg.answer
-  currentQuestion = msg.currentQuestion
-  answerComplete = true
-})
-
-const onkeydown = (event: any) => {
-  if (event.key === 'Enter' && questionDiv.style.display === 'block') {
-    submitAnswer()
-  }
-}
-
-const login = () => {
-  console.log('login')
-  eID = loginForm.eIdInput.value.toLowerCase().split(' ').join('')
-  socket.emit('login', { eID })
-  return false
-}
-
-const submitAnswer = () => {
-  console.log('submitAnswer')
-  socket.emit('submitAnswer', { answer: answerInput.value, eID })
-}
-
-const changeAnswer = () => {
+  loginComplete = false
   answerComplete = false
-}
+  currentQuestion = 1
+  submittedAnswer = ''
+  id = ''
+  state = 'login'
+  firstName = 'SRS'
+  lastName = 'SRS'
 
-const showDiv = (msg: any) => {
-  loginForm.style.display = 'none'
-  if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-    document.title = `Q${msg.currentQuestion + 1}`
-  } else document.title = 'SRS'
-  infoDiv.innerHTML = `Question ${currentQuestion + 1} <br>`
-  if (msg.state === 'showQuestion') {
-    waitDiv.style.display = 'none'
-    questionDiv.style.display = 'block'
-    infoDiv.style.display = 'block'
-    if (answerComplete) {
-      infoDiv.innerHTML += `Your Answer: ${submittedAnswer} <br>`
-      answerDiv.style.display = 'none'
-      changeDiv.style.display = 'block'
-    } else {
-      answerDiv.style.display = 'block'
-      changeDiv.style.display = 'none'
-    }
-  } else {
-    waitDiv.style.display = 'block'
-    questionDiv.style.display = 'none'
-    infoDiv.style.display = 'none'
+  constructor () {
+    this.setupIo()
+    window.addEventListener('keydown', event => this.onKeyDown(event))
+    this.loginForm.submit = () => this.login()
+    this.submitButton.onclick = () => this.submitAnswer()
+    this.changeButton.onclick = () => this.changeAnswer()
   }
-}
 
-document.body.onmousedown = function (event) {
-  console.log('onmousedown')
+  setupIo (): void {
+    this.socket.on('updateClients', (msg: any) => {
+      if (this.loginComplete) {
+        if (this.state !== msg.state) {
+          this.state = msg.state
+          console.log(msg.state)
+        }
+        this.currentQuestion = msg.currentQuestion
+        if (this.state === 'wait') {
+          this.answerInput.value = ''
+          this.answerComplete = false
+        }
+        this.showDiv(msg)
+      }
+    })
+    this.socket.on('loginComplete', (msg: any) => {
+      console.log('loginComplete')
+      this.firstName = msg.firstName == null ? 'Unknown' : msg.firstName
+      this.lastName = msg.lastName == null ? 'eID' : msg.lastName
+      this.nameDiv.innerHTML = `${this.firstName} ${this.lastName} <br>`
+      this.loginComplete = true
+    })
+    this.socket.on('answerReceived', (msg: any) => {
+      console.log('answerReceived')
+      this.submittedAnswer = msg.answer
+      this.currentQuestion = msg.currentQuestion
+      this.answerComplete = true
+    })
+  }
+
+  onKeyDown (event: KeyboardEvent): void {
+    if (event.key === 'Enter' && this.questionDiv.style.display === 'block') {
+      this.submitAnswer()
+    }
+  }
+
+  login (): boolean {
+    console.log('login')
+    this.id = this.loginForm.eIdInput.value.toLowerCase().split(' ').join('')
+    this.socket.emit('login', { id: this.id })
+    return false
+  }
+
+  submitAnswer (): void {
+    console.log('submitAnswer')
+    this.socket.emit('submitAnswer', {
+      answer: this.answerInput.value,
+      id: this.id
+    })
+  }
+
+  changeAnswer (): void {
+    this.answerComplete = false
+  }
+
+  showDiv (msg: ServerUpdateClient): void {
+    this.loginForm.style.display = 'none'
+    if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
+      document.title = `Q${msg.currentQuestion + 1}`
+    } else document.title = 'SRS'
+    this.infoDiv.innerHTML = `Question ${msg.currentQuestion + 1} <br>`
+    if (msg.state === 'showQuestion') {
+      this.waitDiv.style.display = 'none'
+      this.questionDiv.style.display = 'block'
+      this.infoDiv.style.display = 'block'
+      if (this.answerComplete) {
+        this.infoDiv.innerHTML += `Your Answer: ${this.submittedAnswer} <br>`
+        this.answerDiv.style.display = 'none'
+        this.changeDiv.style.display = 'block'
+      } else {
+        this.answerDiv.style.display = 'block'
+        this.changeDiv.style.display = 'none'
+      }
+    } else {
+      this.waitDiv.style.display = 'block'
+      this.questionDiv.style.display = 'none'
+      this.infoDiv.style.display = 'none'
+    }
+  }
+
+  mousedown (event: MouseEvent): void {
+    console.log('mousedown', event.clientX, event.clientY)
+  }
 }

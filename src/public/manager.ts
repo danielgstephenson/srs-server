@@ -1,86 +1,79 @@
 import { io } from 'socket.io-client'
-const socket = io()
+import { CorrectAnswerMessage, UpdateManagerMessage } from '../messages'
+import { getDateString } from '../math'
 
-const startupDiv = document.getElementById('startupDiv') as HTMLDivElement
-const waitDiv = document.getElementById('waitDiv') as HTMLDivElement
-const showQuestionDiv = document.getElementById('showQuestionDiv') as HTMLDivElement
-const correctAnswerDiv = document.getElementById('correctAnswerDiv') as HTMLDivElement
-const correctAnswerInput = document.getElementById('correctAnswerInput') as HTMLInputElement
-const answerCountText = document.getElementById('answerCountText') as HTMLSpanElement
-const summaryText = document.getElementById('summaryText') as HTMLSpanElement
-
-let sessionId = ''
-let correctAnswer = ''
-
-socket.on('updateClients', msg => {
-  if (msg.state !== 'startup') sessionId = msg.sessionId
-  showDiv(msg)
-  answerCountText.innerHTML = msg.numStudentsAnswered + ' '
-  summaryText.innerHTML = msg.summary
-})
-
-const newSession = () => {
-  sessionId = getDateString()
-  socket.emit('newSession', { sessionId })
-}
-
-const newQuestion = () => {
-  correctAnswerInput.value = ''
+export class Manger {
+  socket = io()
+  startupDiv = document.getElementById('startupDiv') as HTMLDivElement
+  waitDiv = document.getElementById('waitDiv') as HTMLDivElement
+  showQuestionDiv = document.getElementById('showQuestionDiv') as HTMLDivElement
+  correctAnswerDiv = document.getElementById('correctAnswerDiv') as HTMLDivElement
+  correctAnswerInput = document.getElementById('correctAnswerInput') as HTMLInputElement
+  readyCountSpan = document.getElementById('readyCountSpan') as HTMLSpanElement
+  resultCountSpan = document.getElementById('resultCountSpan') as HTMLSpanElement
+  newSessionButton = document.getElementById('newSessionButton') as HTMLButtonElement
+  newQuestionButton = document.getElementById('newQuestionButton') as HTMLButtonElement
+  submitAnswerButton = document.getElementById('submitAnswerButton') as HTMLButtonElement
+  showQuestionButton = document.getElementById('showQuestionButton') as HTMLButtonElement
+  sessionId = ''
   correctAnswer = ''
-  socket.emit('newQuestion', { sessionId })
-}
 
-const hideQuestion = () => {
-  socket.emit('hideQuestion', { sessionId })
-}
-
-const showQuestion = () => {
-  socket.emit('showQuestion', { sessionId })
-}
-
-const submitCorrectAnswer = () => {
-  correctAnswer = correctAnswerInput.value
-  socket.emit('submitCorrectAnswer', { sessionId, correctAnswer })
-}
-
-const showDiv = (msg: any) => {
-  if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-    document.title = `Q${msg.currentQuestion + 1}`
-  } else document.title = 'SRS'
-  const stateMap = {
-    startup: 'none',
-    wait: 'none',
-    showQuestion: 'none',
-    correctAnswer: 'none',
-    selectQuestion: 'none',
-    selectSession: 'none'
+  constructor () {
+    this.setupIo()
+    this.newSessionButton.onclick = () => this.newSession()
+    this.newQuestionButton.onclick = () => this.newQuestion()
+    this.submitAnswerButton.onclick = () => this.submitCorrectAnswer()
+    this.showQuestionButton.onclick = () => this.showQuestion()
   }
-  console.log('msg.state', msg.state)
-  if(msg.state === 'startup') stateMap.startup = 'block'
-  if(msg.state === 'wait') stateMap.wait = 'block'
-  if(msg.state === 'showQuestion') stateMap.showQuestion = 'block'
-  if(msg.state === 'correctAnswer') stateMap.correctAnswer = 'block'
-  if(msg.state === 'selectQuestion') stateMap.selectQuestion = 'block'
-  if(msg.state === 'selectSession') stateMap.selectSession = 'block'
-  startupDiv.style.display = stateMap.startup
-  waitDiv.style.display = stateMap.wait
-  showQuestionDiv.style.display = stateMap.showQuestion
-  correctAnswerDiv.style.display = stateMap.correctAnswer
-}
 
-const getDateString = function () {
-  const makeTwoDigits = function (x: number) {
-    const y = Math.round(x)
-    if (y > 9) return String(y)
-    else return String('0' + y)
+  setupIo (): void {
+    this.socket.on('update', (msg: UpdateManagerMessage) => {
+      if (msg.state !== 'startup') this.sessionId = msg.sessionId
+      this.showDiv(msg)
+      this.readyCountSpan.innerHTML = msg.readyCount.toString() + ' '
+    })
+    this.socket.emit('managerLogin')
   }
-  const d = new Date()
-  let myDateString = ''
-  myDateString += d.getFullYear()
-  myDateString += makeTwoDigits((d.getMonth() + 1))
-  myDateString += makeTwoDigits(d.getDate())
-  myDateString += makeTwoDigits(d.getHours())
-  myDateString += makeTwoDigits(d.getMinutes())
-  myDateString += makeTwoDigits(d.getSeconds())
-  return myDateString
+
+  newSession (): void {
+    this.sessionId = getDateString()
+    this.socket.emit('newSession', this.sessionId)
+  }
+
+  newQuestion (): void {
+    this.correctAnswerInput.value = ''
+    this.correctAnswer = ''
+    this.socket.emit('newQuestion', this.sessionId)
+  }
+
+  hideQuestion (): void {
+    this.socket.emit('hideQuestion', this.sessionId)
+  }
+
+  showQuestion (): void {
+    this.socket.emit('showQuestion', this.sessionId)
+  }
+
+  submitCorrectAnswer (): void {
+    this.correctAnswer = this.correctAnswerInput.value
+    const msg: CorrectAnswerMessage = {
+      sessionId: this.sessionId,
+      answer: this.correctAnswer
+    }
+    this.socket.emit('correctAnswer', msg)
+  }
+
+  showDiv (msg: UpdateManagerMessage): void {
+    if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
+      document.title = `Q${msg.currentQuestion + 1}`
+    } else document.title = 'SRS'
+    this.startupDiv.style.display = 'none'
+    this.waitDiv.style.display = 'none'
+    this.showQuestionDiv.style.display = 'none'
+    this.correctAnswerDiv.style.display = 'none'
+    if (msg.state === 'startup') this.startupDiv.style.display = 'block'
+    if (msg.state === 'wait') this.waitDiv.style.display = 'block'
+    if (msg.state === 'showQuestion') this.showQuestionDiv.style.display = 'block'
+    if (msg.state === 'correctAnswer') this.correctAnswerDiv.style.display = 'block'
+  }
 }

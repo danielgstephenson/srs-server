@@ -5,20 +5,20 @@
 </head>
 <body>
   <div id='startupDiv'>
-    <button type="button" onclick="window.newSession()">New Session</button>
+    <button id="newSessionButton" type="button">New Session</button>
   </div>
   <div id='waitDiv' style='display:none;'>
-    <button type="button" onclick="window.newQuestion()">New Question</button>
+    <button id="newQuestionButton" type="button"">New Question</button>
   </div>
   <div id='showQuestionDiv' style='display:none;'>
-    <span id=answerCountText> 0/0 </span> <button type="button" onclick="hideQuestion()">Hide Question</button> <br>
+    <span id=readyCountSpan> 0 </span> <button type="button">Hide Question</button> <br>
   </div>
   <div id='correctAnswerDiv' style='display:none;'>
     Correct:<input id='correctAnswerInput' size=5>
-    <button type="button" onclick="window.submitCorrectAnswer()">Submit</button>
-    <button type="button" onclick="window.showQuestion()">Show</button> <br>
-    <span id='summaryText'></span>
+    <button id="submitAnswerButton" type="button">Submit</button>
+    <button id="showQuestionButton" type="button">Show</button> <br>
+    <span id='resultCountSpan'></span>
   </div>
-  <script src="manager.ts" type="module"></script>
+  <script src="managerIndex.ts" type="module"></script>
 </body>
 </html>

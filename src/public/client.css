@@ -18,7 +18,11 @@ img {
   font-size: 5vw;
   float: center;
   text-align: center;
-  margin: 3px
+  margin: 3px;
+}
+#loginDiv {
+  display: block;
+  font-size: 5vw;
 }
 #waitDiv {
   font: Consolas;

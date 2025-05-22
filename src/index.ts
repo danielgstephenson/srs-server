@@ -1,3 +1,3 @@
-import { System } from "./system";
+import { System } from './system'
 
-const system = new System()
+void new System()

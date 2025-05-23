@@ -86,7 +86,7 @@ export class Scribe {
       const session = this.csvToRows(csv)
       sessions.push(session)
     })
-    const rows: Row[] = []
+    const gradeRows: Row[] = []
     this.system.ids.forEach(id => {
       let absences = 0
       sessions.forEach((session, i) => {
@@ -94,18 +94,15 @@ export class Scribe {
         const headers = Object.keys(session[0])
         const questionIndices = headers.filter(header => isDecimal(header))
         console.log(id, sessionName, ...questionIndices)
-        const attendIds: string[] = []
-        session.forEach(row => {
-          if (typeof row.eid !== 'string') return
-          attendIds.push(row.eid)
-        })
-        console.log(attendIds)
-        if (!attendIds.includes(id)) {
+        const sessionRow = this.getIdRow(id, session)
+        if (sessionRow == null) {
           console.log('absent')
           absences += 1
+        } else {
+          console.log('present')
         }
       })
-      const row: Row = {
+      const gradeRow: Row = {
         firstName: this.system.firstNames[id],
         lastName: this.system.lastNames[id],
         eID: id,
@@ -114,14 +111,21 @@ export class Scribe {
         sessions: sessions.length,
         average: 0
       }
-      rows.push(row)
+      gradeRows.push(gradeRow)
     })
-    const csv = json2csv(rows)
+    const csv = json2csv(gradeRows)
     try {
       writeFileSync('grades.csv', csv)
     } catch (error) {
       console.error('writeDataFile error:', error)
     }
+  }
+
+  getIdRow (id: string, session: Row[]): Row | null {
+    const rows = session.filter(row => {
+      return row.eid === id
+    })
+    return rows.at(-1) ?? null
   }
 
   csvToRows (csv: string): Row[] {

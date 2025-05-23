@@ -6,10 +6,15 @@ import { Server } from './server'
 import { Student } from './student'
 import { parseAnswer, unique } from './math'
 
+// TO DO:
+// Write Session Files
+// Read Session Files
+// Write Grade File
+
 export class System {
   server: Server
   managerSocket?: Socket
-  scribe = new Scribe()
+  scribe: Scribe
   token = Math.random().toString()
   sessionId = ''
   state = 'startup'
@@ -20,6 +25,7 @@ export class System {
   correctAnswers: string[] = []
 
   constructor () {
+    this.scribe = new Scribe(this)
     this.server = new Server()
     this.setupIo()
     setInterval(() => this.tick(), 200)

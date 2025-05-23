@@ -9,25 +9,26 @@
   </head>
   <body>
     <div id="loginDiv">
-      eID: <input id="idInput" class='login' type="text" required>
-      <input id="loginButton" type="button" class='login' value="Submit"><br>
-      <p style="font-size:50%; margin: 5% 10%;" >
-        Your eID is the part of your VCU email before the "@" symbol.<br>
-        If your VCU email was smithj@vcu.edu then your eID would be smithj.<br>
+      Your eID: <br>
+      <input id="idInput" type="text" required> <br>
+      <input id="loginButton" type="button" value="Submit"><br>
+      <p style="font-size: 5vmin; margin: 2vmin 2vmin;" >
+        Your eID is the part of your VCU email before the "@" symbol.
+        If your VCU email was smithj@vcu.edu then your eID would be smithj.
       </p>
     </div>
     <div id="nameDiv"></div>
     <div id="infoDiv"></div>
     <div id=waitDiv style='display:none;'>
-      Please Wait
+      Connected
     </div>
     <div id=questionDiv style='display:none;'>
-      <div id='answerDiv' class="interface">
+      <div id='answerDiv'>
         Your Answer: </br>
-        <input id='answerInput' class="interface" size=5> </br>
-        <button id='submitButton' type="button" class="interface">Submit</button>
+        <input id='answerInput' size=6> </br>
+        <button id='submitButton' type="button">Submit</button>
       </div>
-      <div id='changeDiv' class="interface" style='display:none;'> 
+      <div id='changeDiv' style='display:none;'> 
         <button id='changeButton' type="button" class="interface">Change Answer</button>
       </div>
     </div>

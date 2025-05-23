@@ -33,7 +33,7 @@ export class System {
       socket.on('disconnect', () => {
         Object.values(this.students).forEach(student => {
           if (student.socket.id === socket.id) {
-            console.log('disconnect', student.firstName, student.lastName)
+            console.log('disconnect', student.firstName, student.lastName, student.id)
             student.connected = false
           }
         })
@@ -42,6 +42,7 @@ export class System {
         this.managerSocket = socket
       })
       socket.on('newSession', (sessionId: string) => {
+        console.log('newSession', sessionId)
         this.sessionId = sessionId
         this.state = 'wait'
       })
@@ -67,7 +68,9 @@ export class System {
       })
       socket.on('correctAnswer', (msg: CorrectAnswerMessage) => {
         this.sessionId = msg.sessionId
-        this.currentQuestion().correctAnswer = parseAnswer(msg.answer)
+        const currentQuestion = this.currentQuestion()
+        if (currentQuestion == null) return
+        currentQuestion.correctAnswer = parseAnswer(msg.answer)
         this.state = 'wait'
         console.log(`correctAnswer: ${msg.answer}`)
         this.scribe.writeDataFile()
@@ -78,20 +81,24 @@ export class System {
         const student = this.students[id]
         student.socket = socket
         student.connected = true
-        this.currentQuestion().answers[id] = parseAnswer(msg.answer)
+        const currentQuestion = this.currentQuestion()
+        if (currentQuestion == null) return
+        currentQuestion.answers[id] = parseAnswer(msg.answer)
         student.ready = true
-        const readyStudents = Object.values(this.students).filter(s => s.ready)
-        const unreadyStudents = Object.values(this.students).filter(s => !s.ready)
-        const readyNames = readyStudents.map(s => `${s.firstName} ${s.lastName}`).sort()
-        const unreadyNames = unreadyStudents.map(s => `${s.firstName} ${s.lastName}`).sort()
-        console.log('ready', readyNames)
-        console.log('unready', unreadyNames)
+        this.logReady()
+        console.log(`submitAnswer ${student.firstName} ${student.lastName} ${msg.answer}`)
         const reply: AnswerReceivedMessage = {
           answer: msg.answer,
           currentQuestion: this.questions.length
         }
         socket.emit('answerReceived', reply)
-        console.log(`submitAnswer ${id} ${student.firstName} ${student.lastName} ${msg.answer}`)
+      })
+      socket.on('changeAnswer', (id: string) => {
+        const student = this.students[id]
+        if (student == null) return
+        student.ready = false
+        this.logReady()
+        console.log(`changeAnswer ${student.firstName} ${student.lastName}`)
       })
     })
   }
@@ -101,13 +108,32 @@ export class System {
     const lastName = this.lastNames[id] ?? 'eID'
     if (this.students[id] == null) {
       this.students[id] = new Student(socket, id, firstName, lastName)
+    } else {
+      this.students[id].socket = socket
     }
     console.log('login: ' + firstName + ' ' + lastName + ' ' + id)
     socket.emit('loginComplete', { firstName, lastName })
   }
 
-  currentQuestion (): Question {
+  logReady (): void {
+    const currentQuestion = this.currentQuestion()
+    if (currentQuestion == null) return
+    const readyStudents = Object.values(this.students).filter(s => s.ready)
+    const unreadyStudents = Object.values(this.students).filter(s => !s.ready)
+    const readyNames = readyStudents.map(s => `${s.firstName} ${s.lastName} ${s.id}`).sort()
+    const unreadyNames = unreadyStudents.map(s => `${s.firstName} ${s.lastName} ${s.id}`).sort()
+    console.log('ready', readyNames)
+    console.log('unready', unreadyNames)
+  }
+
+  currentQuestion (): Question | null {
     return this.questions[this.questions.length - 1]
+  }
+
+  currentAnswers (): Record<string, string> {
+    const currentQuestion = this.currentQuestion()
+    if (currentQuestion == null) return {}
+    return currentQuestion.answers
   }
 
   tick (): void {
@@ -123,9 +149,9 @@ export class System {
     if (this.managerSocket == null) return
     const students = Object.values(this.students)
     const readyCount = students.filter(s => s.ready).length
-    const answers = Object.values(this.currentQuestion().answers)
+    const answers = Object.values(this.currentAnswers())
     const uniqueAnswers = unique(answers)
-    const answerCounts = answers.map(answer => {
+    const answerCounts = uniqueAnswers.map(answer => {
       return answers.filter(x => x === answer).length
     })
     const updateManagerMessage: UpdateManagerMessage = {

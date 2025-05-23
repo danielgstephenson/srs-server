@@ -1,3 +1,3 @@
-import { Manager } from 'socket.io-client'
+import { Manager } from './manager'
 
 void new Manager()

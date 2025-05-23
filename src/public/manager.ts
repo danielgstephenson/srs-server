@@ -2,7 +2,7 @@ import { io } from 'socket.io-client'
 import { CorrectAnswerMessage, UpdateManagerMessage } from '../messages'
 import { getDateString } from '../math'
 
-export class Manger {
+export class Manager {
   socket = io()
   startupDiv = document.getElementById('startupDiv') as HTMLDivElement
   waitDiv = document.getElementById('waitDiv') as HTMLDivElement
@@ -13,20 +13,29 @@ export class Manger {
   resultCountSpan = document.getElementById('resultCountSpan') as HTMLSpanElement
   newSessionButton = document.getElementById('newSessionButton') as HTMLButtonElement
   newQuestionButton = document.getElementById('newQuestionButton') as HTMLButtonElement
+  hideQuestionButton = document.getElementById('hideQuestionButton') as HTMLButtonElement
   submitAnswerButton = document.getElementById('submitAnswerButton') as HTMLButtonElement
   showQuestionButton = document.getElementById('showQuestionButton') as HTMLButtonElement
   sessionId = ''
   correctAnswer = ''
+  token = ''
 
   constructor () {
     this.setupIo()
     this.newSessionButton.onclick = () => this.newSession()
     this.newQuestionButton.onclick = () => this.newQuestion()
+    this.hideQuestionButton.onclick = () => this.hideQuestion()
     this.submitAnswerButton.onclick = () => this.submitCorrectAnswer()
     this.showQuestionButton.onclick = () => this.showQuestion()
   }
 
   setupIo (): void {
+    this.socket.on('connected', (token: string) => {
+      console.log('connected')
+      const newServer = !['', token].includes(this.token)
+      if (newServer) location.reload()
+      this.token = token
+    })
     this.socket.on('update', (msg: UpdateManagerMessage) => {
       if (msg.state !== 'startup') this.sessionId = msg.sessionId
       this.showDiv(msg)
@@ -36,25 +45,30 @@ export class Manger {
   }
 
   newSession (): void {
+    console.log('newSession')
     this.sessionId = getDateString()
     this.socket.emit('newSession', this.sessionId)
   }
 
   newQuestion (): void {
+    console.log('newQuestion')
     this.correctAnswerInput.value = ''
     this.correctAnswer = ''
     this.socket.emit('newQuestion', this.sessionId)
   }
 
   hideQuestion (): void {
+    console.log('hideQuestion')
     this.socket.emit('hideQuestion', this.sessionId)
   }
 
   showQuestion (): void {
+    console.log('showQuestion')
     this.socket.emit('showQuestion', this.sessionId)
   }
 
   submitCorrectAnswer (): void {
+    console.log('submitCorrectAnswer')
     this.correctAnswer = this.correctAnswerInput.value
     const msg: CorrectAnswerMessage = {
       sessionId: this.sessionId,
@@ -64,8 +78,9 @@ export class Manger {
   }
 
   showDiv (msg: UpdateManagerMessage): void {
+    console.log('msg.state', msg.state)
     if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-      document.title = `Q${msg.currentQuestion + 1}`
+      document.title = `Q${msg.currentQuestion}`
     } else document.title = 'SRS'
     this.startupDiv.style.display = 'none'
     this.waitDiv.style.display = 'none'

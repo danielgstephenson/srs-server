@@ -1,5 +1,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; text-align: center;}
-body { font-family: 10vh Consolas; }
+body { 
+  font-family: 10vh Consolas;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -13,34 +20,74 @@ img {
   width: 100%;
   height: 100%;
 }
-.login {
+
+#loginDiv {
+  display: block;
+  font-size: 12vmin;
+}
+#idInput {
   font: Consolas;
-  font-size: 5vw;
+  font-size: 10vmin;
+  width: 90vw;
   float: center;
   text-align: center;
   margin: 3px;
 }
-#loginDiv {
-  display: block;
-  font-size: 5vw;
+#loginButton {
+  font: Consolas;
+  font-size: 10vmin;
+  float: center;
+  text-align: center;
+  margin-top: 6vmin;
+  margin-bottom: 6vmin;
+  padding: 1vmin;
 }
 #waitDiv {
   font: Consolas;
-  font-size: 20vh;
+  font-size: 14vmin;
   margin-top: 20vh;
   margin-bottom: 40vh;
 }
 #nameDiv {
   font: Consolas;
-  font-size: 5vh;
+  font-size: 10vmin;
 }
 #infoDiv {
   font: Consolas;
-  font-size: 5vh;
-} 
-.interface {
+  font-size: 10vmin;
+}
+#answerDiv {
   font: Consolas;
-  font-size: 10vh;
+  font-size: 10vmin;
+  float: center;
+  text-align: center;
+  margin: 3px
+}
+#answerInput {
+  font: Consolas;
+  font-size: 10vmin;
+  float: center;
+  text-align: center;
+  margin: 3px
+}
+#submitButton {
+  font: Consolas;
+  font-size: 10vmin;
+  float: center;
+  text-align: center;
+  margin-top: 6vmin;
+  padding: 1vmin;
+}
+#changeDiv {
+  font: Consolas;
+  font-size: 10vmin;
+  float: center;
+  text-align: center;
+  margin: 3px
+}
+#changeButton {
+  font: Consolas;
+  font-size: 10vmin;
   float: center;
   text-align: center;
   margin: 3px

@@ -40,10 +40,8 @@ export class Client {
       const newServer = !['', token].includes(this.token)
       if (newServer) location.reload()
       this.token = token
-      this.loginDiv.style.display = 'block'
     })
     this.socket.on('update', (msg: UpdateStudentMessage) => {
-      console.log('update')
       if (this.loginComplete) {
         if (this.state !== msg.state) {
           this.state = msg.state
@@ -61,8 +59,10 @@ export class Client {
       console.log('loginComplete')
       this.firstName = msg.firstName
       this.lastName = msg.lastName
-      this.nameDiv.innerHTML = `${this.firstName} ${this.lastName}   ${this.id}<br>`
+      this.nameDiv.innerHTML = `${this.firstName} ${this.lastName} ${this.id}<br>`
+      if (msg.firstName === 'Unknown') this.nameDiv.style.color = 'red'
       this.loginComplete = true
+      this.loginDiv.style.display = 'none'
     })
     this.socket.on('answerReceived', (msg: AnswerReceivedMessage) => {
       console.log('answerReceived')
@@ -103,14 +103,16 @@ export class Client {
 
   changeAnswer (): void {
     this.ready = false
+    this.socket.emit('changeAnswer', this.id)
   }
 
   showDiv (msg: UpdateStudentMessage): void {
+    console.log('msg.state', msg.state)
     this.loginDiv.style.display = 'none'
     if (['showQuestion', 'correctAnswer'].includes(msg.state)) {
-      document.title = `Q${msg.currentQuestion + 1}`
+      document.title = `Q${msg.currentQuestion}`
     } else document.title = 'SRS'
-    this.infoDiv.innerHTML = `Question ${msg.currentQuestion + 1} <br>`
+    this.infoDiv.innerHTML = `Question ${msg.currentQuestion} <br>`
     if (msg.state === 'showQuestion') {
       this.waitDiv.style.display = 'none'
       this.questionDiv.style.display = 'block'

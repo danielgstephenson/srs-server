@@ -7,4 +7,4 @@ grades/*
 !grades/.gitkeep
 dist/
 .parcel-cache
-config.json
+roster.csv

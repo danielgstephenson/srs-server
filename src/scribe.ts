@@ -1,7 +1,8 @@
 import { csv2json, json2csv } from 'json-2-csv'
-import { readFileSync, writeFileSync } from 'fs-extra'
+import { readdirSync, readFileSync, writeFileSync } from 'fs-extra'
 import { System } from './system'
 import path from 'path'
+import { isDecimal } from './math'
 
 export class Scribe {
   system: System
@@ -13,11 +14,7 @@ export class Scribe {
 
   loadRoster (): void {
     const csv = readFileSync('roster.csv', 'utf-8')
-    const options = {
-      delimiter: { eol: '\r\n' },
-      trimHeaderFields: true
-    }
-    const rows = csv2json(csv, options)
+    const rows = this.csvToRows(csv)
     rows.forEach(row => {
       if (!('Name' in row && 'eID' in row && 'vID' in row)) return
       if (typeof row.Name !== 'string') return
@@ -72,26 +69,75 @@ export class Scribe {
     })
     const csv = json2csv(rows, { keys: headers })
     const filePath = path.join('sessions', `${this.system.sessionId}.csv`)
-    writeFileSync(filePath, csv)
+    try {
+      writeFileSync(filePath, csv)
+    } catch (error) {
+      console.error('writeSessionFile error:', error)
+    }
   }
 
-  writeDataFile (): void {
+  writeGradeFile (): void {
+    console.log('writeGradeFile')
+    const sessions: Row[][] = []
+    const sessionFiles = readdirSync('sessions').filter(x => x !== '.gitkeep').reverse()
+    sessionFiles.forEach(sessionFile => {
+      const filePath = path.join('sessions', sessionFile)
+      const csv = readFileSync(filePath, 'utf-8')
+      const session = this.csvToRows(csv)
+      sessions.push(session)
+    })
     const rows: Row[] = []
     this.system.ids.forEach(id => {
+      let absences = 0
+      sessions.forEach((session, i) => {
+        const sessionName = sessionFiles[i].slice(0, -4)
+        const headers = Object.keys(session[0])
+        const questionIndices = headers.filter(header => isDecimal(header))
+        console.log(id, sessionName, ...questionIndices)
+        const attendIds: string[] = []
+        session.forEach(row => {
+          if (typeof row.eid !== 'string') return
+          attendIds.push(row.eid)
+        })
+        console.log(attendIds)
+        if (!attendIds.includes(id)) {
+          console.log('absent')
+          absences += 1
+        }
+      })
       const row: Row = {
         firstName: this.system.firstNames[id],
         lastName: this.system.lastNames[id],
         eID: id,
         vID: this.system.vIds[id],
-        absences: 0,
-        sessions: 0,
+        absences,
+        sessions: sessions.length,
         average: 0
       }
       rows.push(row)
     })
     const csv = json2csv(rows)
-    writeFileSync('grades.csv', csv)
+    try {
+      writeFileSync('grades.csv', csv)
+    } catch (error) {
+      console.error('writeDataFile error:', error)
+    }
+  }
+
+  csvToRows (csv: string): Row[] {
+    const linuxOptions = {
+      delimiter: { eol: '\r\n' },
+      trimHeaderFields: true
+    }
+    const linuxRows = csv2json(csv, linuxOptions)
+    if (linuxRows.length > 0) return linuxRows
+    const windowsOptions = {
+      delimiter: { eol: '\n' },
+      trimHeaderFields: true
+    }
+    const windowsRows = csv2json(csv, windowsOptions)
+    return windowsRows
   }
 }
 
-type Row = Record<string, string | number>
+type Row = Record<string, any>

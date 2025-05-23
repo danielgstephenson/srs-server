@@ -30,6 +30,7 @@ export class System {
     this.scribe = new Scribe(this)
     this.server = new Server()
     this.setupIo()
+    this.scribe.writeGradeFile()
     setInterval(() => this.tick(), 200)
   }
 
@@ -73,16 +74,6 @@ export class System {
       socket.on('login', (id: string) => {
         this.login(socket, id)
       })
-      socket.on('correctAnswer', (msg: CorrectAnswerMessage) => {
-        this.sessionId = msg.sessionId
-        const currentQuestion = this.currentQuestion()
-        if (currentQuestion == null) return
-        currentQuestion.correctAnswer = parseAnswer(msg.answer)
-        this.state = 'wait'
-        console.log(`correctAnswer: ${msg.answer}`)
-        this.scribe.writeSessionFile()
-        this.scribe.writeDataFile()
-      })
       socket.on('submitAnswer', (msg: AnswerMessage) => {
         const id = msg.id
         if (this.students[id] == null) this.login(socket, id)
@@ -108,6 +99,16 @@ export class System {
         student.ready = false
         this.logReadyStudents()
         console.log(`change ${student.firstName} ${student.lastName}`)
+      })
+      socket.on('correctAnswer', (msg: CorrectAnswerMessage) => {
+        this.sessionId = msg.sessionId
+        const currentQuestion = this.currentQuestion()
+        if (currentQuestion == null) return
+        currentQuestion.correctAnswer = parseAnswer(msg.answer)
+        this.state = 'wait'
+        console.log(`correctAnswer: ${msg.answer}`)
+        this.scribe.writeSessionFile()
+        this.scribe.writeGradeFile()
       })
     })
   }

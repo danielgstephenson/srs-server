@@ -13,7 +13,7 @@ import { parseAnswer, unique } from './math'
 
 export class System {
   server: Server
-  managerSocket?: Socket
+  managerSockets: Socket[] = []
   scribe: Scribe
   token = Math.random().toString()
   sessionId = ''
@@ -32,7 +32,6 @@ export class System {
   }
 
   setupIo (): void {
-    console.log('setupIo')
     this.server.io.on('connection', socket => {
       console.log('connect', socket.id)
       socket.emit('connected', this.token)
@@ -45,7 +44,7 @@ export class System {
         })
       })
       socket.on('managerLogin', () => {
-        this.managerSocket = socket
+        this.managerSockets.push(socket)
       })
       socket.on('newSession', (sessionId: string) => {
         console.log('newSession', sessionId)
@@ -89,12 +88,13 @@ export class System {
         student.connected = true
         const currentQuestion = this.currentQuestion()
         if (currentQuestion == null) return
-        currentQuestion.answers[id] = parseAnswer(msg.answer)
+        const answer = parseAnswer(msg.answer)
+        currentQuestion.answers[id] = answer
         student.ready = true
-        this.logReady()
-        console.log(`submitAnswer ${student.firstName} ${student.lastName} ${msg.answer}`)
+        this.logReadyStudents()
+        console.log(`submitAnswer ${student.firstName} ${student.lastName} ${answer}`)
         const reply: AnswerReceivedMessage = {
-          answer: msg.answer,
+          answer,
           currentQuestion: this.questions.length
         }
         socket.emit('answerReceived', reply)
@@ -103,8 +103,8 @@ export class System {
         const student = this.students[id]
         if (student == null) return
         student.ready = false
-        this.logReady()
-        console.log(`changeAnswer ${student.firstName} ${student.lastName}`)
+        this.logReadyStudents()
+        console.log(`change ${student.firstName} ${student.lastName}`)
       })
     })
   }
@@ -121,7 +121,7 @@ export class System {
     socket.emit('loginComplete', { firstName, lastName })
   }
 
-  logReady (): void {
+  logReadyStudents (): void {
     const currentQuestion = this.currentQuestion()
     if (currentQuestion == null) return
     const readyStudents = Object.values(this.students).filter(s => s.ready)
@@ -152,7 +152,6 @@ export class System {
     Object.values(this.students).forEach(student => {
       student.socket.emit('update', updateStudentMsg)
     })
-    if (this.managerSocket == null) return
     const students = Object.values(this.students)
     const readyCount = students.filter(s => s.ready).length
     const answers = Object.values(this.currentAnswers())
@@ -169,6 +168,8 @@ export class System {
       answerCounts
 
     }
-    this.managerSocket.emit('update', updateManagerMessage)
+    this.managerSockets.forEach(managerSocket => {
+      managerSocket.emit('update', updateManagerMessage)
+    })
   }
 }

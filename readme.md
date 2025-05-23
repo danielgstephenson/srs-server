@@ -1,4 +1,4 @@
-Add roster.csv before use.
+Add roster.csv and config.json before use.
 
 Listen on port 443 when using https.
 

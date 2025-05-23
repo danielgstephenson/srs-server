@@ -49,7 +49,7 @@ export function countOccurrences (str: string, target: string): number {
 export function parseDecimal (str: string): number | null {
   const filtered = filterString(str, '1234567890.')
   const x = parseFloat(filtered)
-  if (!isFinite(x)) return x
+  if (!isFinite(x)) return null
   return x
 }
 
@@ -66,6 +66,12 @@ export function parseNumber (str: string): number | null {
     return decimal
   }
   return null
+}
+
+export function isDecimal (str: string): boolean {
+  const filtered = filterString(str, '1234567890.')
+  const x = parseFloat(filtered)
+  return isFinite(x)
 }
 
 export function parseAnswer (str: string): string {

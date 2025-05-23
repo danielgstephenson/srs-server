@@ -19,8 +19,10 @@ export class System {
   sessionId = ''
   state = 'startup'
   questions: Question[] = []
+  ids: string[] = []
   firstNames: Record<string, string> = {}
   lastNames: Record<string, string> = {}
+  vIds: Record<string, string> = {}
   students: Record<string, Student> = {}
   correctAnswers: string[] = []
 
@@ -78,6 +80,7 @@ export class System {
         currentQuestion.correctAnswer = parseAnswer(msg.answer)
         this.state = 'wait'
         console.log(`correctAnswer: ${msg.answer}`)
+        this.scribe.writeSessionFile()
         this.scribe.writeDataFile()
       })
       socket.on('submitAnswer', (msg: AnswerMessage) => {
@@ -166,7 +169,6 @@ export class System {
       readyCount,
       uniqueAnswers,
       answerCounts
-
     }
     this.managerSockets.forEach(managerSocket => {
       managerSocket.emit('update', updateManagerMessage)

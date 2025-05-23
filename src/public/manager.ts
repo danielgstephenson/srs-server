@@ -19,9 +19,11 @@ export class Manager {
   sessionId = ''
   correctAnswer = ''
   token = ''
+  state = ''
 
   constructor () {
     this.setupIo()
+    window.addEventListener('keydown', event => this.onKeyDown(event))
     this.newSessionButton.onclick = () => this.newSession()
     this.newQuestionButton.onclick = () => this.newQuestion()
     this.hideQuestionButton.onclick = () => this.hideQuestion()
@@ -40,8 +42,21 @@ export class Manager {
       if (msg.state !== 'startup') this.sessionId = msg.sessionId
       this.showDiv(msg)
       this.readyCountSpan.innerHTML = msg.readyCount.toString() + ' '
+      if (msg.state === 'correctAnswer' && this.state !== 'correctAnswer') {
+        this.correctAnswerInput.focus()
+        this.correctAnswerInput.select()
+      }
+      this.state = msg.state
     })
     this.socket.emit('managerLogin')
+  }
+
+  onKeyDown (event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      if (this.state === 'correctAnswer' && this.correctAnswerInput.value !== '') {
+        this.submitCorrectAnswer()
+      }
+    }
   }
 
   newSession (): void {

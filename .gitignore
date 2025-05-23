@@ -1,10 +1,9 @@
 node_modules/
 config.json
 *.pem
-public/sessions/*
-!public/sessions/.gitkeep
-grades/*
-!grades/.gitkeep
+sessions/*
+sessions/.gitkeep
 dist/
 .parcel-cache
 roster.csv
+grades.csv

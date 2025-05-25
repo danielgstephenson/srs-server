@@ -7,11 +7,6 @@ import { Student } from './student'
 import { parseAnswer, unique } from './functions'
 import { Roster } from './roster'
 
-// TO DO:
-// Write Session Files
-// Read Session Files
-// Write Grade File
-
 export class System {
   server: Server
   roster: Roster

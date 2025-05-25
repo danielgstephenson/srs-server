@@ -76,23 +76,36 @@ export class Client {
     if (event.key === 'Enter') {
       const questionDisplay = getComputedStyle(this.questionDiv).display
       const loginDisplay = getComputedStyle(this.loginDiv).display
-      if (questionDisplay === 'block' && this.answerInput.value !== '') {
+      if (questionDisplay === 'block') {
         this.submitAnswer()
       }
-      if (loginDisplay === 'block' && this.idInput.value !== '') {
+      if (loginDisplay === 'block') {
         this.login()
       }
     }
   }
 
-  login (): boolean {
+  login (): void {
+    if (this.idInput.value.trim() === '') {
+      this.idInput.classList.add('empty-input-highlight')
+      setTimeout(() => {
+        this.idInput.classList.remove('empty-input-highlight')
+      }, 1000)
+      return
+    }
     console.log('login')
     this.id = this.idInput.value.toLowerCase().split(' ').join('')
     this.socket.emit('login', this.id)
-    return false
   }
 
   submitAnswer (): void {
+    if (this.answerInput.value.trim() === '') {
+      this.answerInput.classList.add('empty-input-highlight')
+      setTimeout(() => {
+        this.answerInput.classList.remove('empty-input-highlight')
+      }, 1000)
+      return
+    }
     console.log('submitAnswer')
     const msg: AnswerMessage = {
       answer: this.answerInput.value,

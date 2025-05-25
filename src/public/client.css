@@ -92,7 +92,7 @@ img {
   text-align: center;
   margin: 3px
 }
-.contain {
-  object-fit: contain;
+.empty-input-highlight {
+  background-color: rgba(255, 0, 0, 0.3);
+  transition: background-color 1s ease;
 }
-

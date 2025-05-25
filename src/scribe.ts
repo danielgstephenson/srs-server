@@ -1,37 +1,15 @@
-import { csv2json, json2csv } from 'json-2-csv'
-import { readdirSync, readFileSync, writeFileSync } from 'fs-extra'
-import { System } from './system'
 import path from 'path'
-import { isDecimal } from './math'
+import { json2csv } from 'json-2-csv'
+import { readdirSync, writeFileSync } from 'fs-extra'
+import { System } from './system'
+import { Row } from './functions'
+import { Session } from './session'
 
 export class Scribe {
   system: System
 
   constructor (system: System) {
     this.system = system
-    this.loadRoster()
-  }
-
-  loadRoster (): void {
-    const csv = readFileSync('roster.csv', 'utf-8')
-    const rows = this.csvToRows(csv)
-    rows.forEach(row => {
-      if (!('Name' in row && 'eID' in row && 'vID' in row)) return
-      if (typeof row.Name !== 'string') return
-      if (typeof row.eID !== 'string') return
-      if (typeof row.vID !== 'string') return
-      const id = row.eID
-      const vId = row.vID
-      const names = row.Name.split(', ')
-      const lastName = names[0]
-      const firstName = names[1]
-      if (firstName == null) return
-      if (lastName == null) return
-      this.system.ids.push(id)
-      this.system.firstNames[id] = firstName
-      this.system.lastNames[id] = lastName
-      this.system.vIds[id] = vId
-    })
   }
 
   writeSessionFile (): void {
@@ -78,42 +56,44 @@ export class Scribe {
 
   writeGradeFile (): void {
     console.log('writeGradeFile')
-    const sessions: Row[][] = []
-    const sessionFiles = readdirSync('sessions').filter(x => x !== '.gitkeep').reverse()
-    sessionFiles.forEach(sessionFile => {
-      const filePath = path.join('sessions', sessionFile)
-      const csv = readFileSync(filePath, 'utf-8')
-      const session = this.csvToRows(csv)
-      sessions.push(session)
-    })
+    const fileNames = readdirSync('sessions').filter(x => x !== '.gitkeep').reverse()
+    const sessions = fileNames.map(fileName => new Session(this.system, fileName))
+    sessions.sort((a, b) => a.date === b.date ? 0 : a.date < b.date ? 1 : -1)
     const gradeRows: Row[] = []
+    const questionHeaders = sessions.flatMap(s => Object.values(s.headers))
+    const headers: string[] = [
+      'firstName',
+      'lastName',
+      'eID',
+      'vID',
+      'absences',
+      'sessions',
+      'average',
+      ...questionHeaders
+    ]
     this.system.ids.forEach(id => {
-      let absences = 0
-      sessions.forEach((session, i) => {
-        const sessionName = sessionFiles[i].slice(0, -4)
-        const headers = Object.keys(session[0])
-        const questionIndices = headers.filter(header => isDecimal(header))
-        console.log(id, sessionName, ...questionIndices)
-        const sessionRow = this.getIdRow(id, session)
-        if (sessionRow == null) {
-          console.log('absent')
-          absences += 1
-        } else {
-          console.log('present')
-        }
-      })
       const gradeRow: Row = {
         firstName: this.system.firstNames[id],
         lastName: this.system.lastNames[id],
         eID: id,
         vID: this.system.vIds[id],
-        absences,
+        absences: sessions.filter(s => s.absent[id]).length,
         sessions: sessions.length,
         average: 0
       }
+      sessions.forEach(session => {
+        session.questions.forEach(q => {
+          const header = session.headers[q]
+          gradeRow[header] = session.scores[id][q]
+        })
+      })
       gradeRows.push(gradeRow)
     })
-    const csv = json2csv(gradeRows)
+    sessions.forEach(session => {
+      console.log(session.date)
+    })
+    const options = { keys: headers }
+    const csv = json2csv(gradeRows, options)
     try {
       writeFileSync('grades.csv', csv)
     } catch (error) {
@@ -127,21 +107,4 @@ export class Scribe {
     })
     return rows.at(-1) ?? null
   }
-
-  csvToRows (csv: string): Row[] {
-    const linuxOptions = {
-      delimiter: { eol: '\r\n' },
-      trimHeaderFields: true
-    }
-    const linuxRows = csv2json(csv, linuxOptions)
-    if (linuxRows.length > 0) return linuxRows
-    const windowsOptions = {
-      delimiter: { eol: '\n' },
-      trimHeaderFields: true
-    }
-    const windowsRows = csv2json(csv, windowsOptions)
-    return windowsRows
-  }
 }
-
-type Row = Record<string, any>

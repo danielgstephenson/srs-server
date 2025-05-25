@@ -1,3 +1,10 @@
+import { csv2json } from 'json-2-csv'
+
+export function range (a: number, b?: number): number[] {
+  if (b == null) return range(0, a - 1)
+  return [...Array(b - a + 1).keys()].map(i => a + i)
+}
+
 export function sum (a: number[]): number {
   let total = 0
   a.forEach(x => { total += x })
@@ -9,8 +16,9 @@ export function mean (a: number[]): number {
   return sum(a) / a.length
 }
 
-export function round (x: number): number {
-  return parseFloat(x.toFixed(4))
+export function round (x: number, digits?: number): number {
+  const d = digits ?? 4
+  return parseFloat(x.toFixed(d))
 }
 
 export function unique <T> (a: T[]): T[] {
@@ -79,3 +87,28 @@ export function parseAnswer (str: string): string {
   if (x != null) return round(x).toString()
   return str.toLowerCase().replaceAll(' ', '')
 }
+
+export function csvToRows (csv: string): Row[] {
+  const options = {
+    trimHeaderFields: true
+  }
+  const linuxOptions = { ...options, delimiter: { eol: '\r\n' } }
+  const linuxObjects = csv2json(csv, linuxOptions)
+  const windowsOptions = { ...options, delimiter: { eol: '\n' } }
+  const windowsObjects = csv2json(csv, windowsOptions)
+  const objects = linuxObjects.length > 0 ? linuxObjects : windowsObjects
+  const rows = objects.map(object => {
+    const row: Row = {}
+    Object.entries(object).forEach(entry => {
+      const key = entry[0]
+      const value = entry[1]
+      if (['string', 'number'].includes(typeof value)) {
+        row[key] = value
+      }
+    })
+    return row
+  })
+  return rows
+}
+
+export type Row = Record<string, string | number>

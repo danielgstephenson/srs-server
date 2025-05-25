@@ -4,7 +4,8 @@ import { Question } from './question'
 import { Scribe } from './scribe'
 import { Server } from './server'
 import { Student } from './student'
-import { parseAnswer, unique } from './math'
+import { parseAnswer, unique } from './functions'
+import { Roster } from './roster'
 
 // TO DO:
 // Write Session Files
@@ -13,11 +14,12 @@ import { parseAnswer, unique } from './math'
 
 export class System {
   server: Server
-  managerSockets: Socket[] = []
+  roster: Roster
   scribe: Scribe
   token = Math.random().toString()
   sessionId = ''
   state = 'startup'
+  managerSockets: Socket[] = []
   questions: Question[] = []
   ids: string[] = []
   firstNames: Record<string, string> = {}
@@ -29,6 +31,11 @@ export class System {
   constructor () {
     this.scribe = new Scribe(this)
     this.server = new Server()
+    this.roster = new Roster()
+    this.ids = this.roster.ids
+    this.firstNames = this.roster.firstNames
+    this.lastNames = this.roster.lastNames
+    this.vIds = this.roster.vIds
     this.setupIo()
     this.scribe.writeGradeFile()
     setInterval(() => this.tick(), 200)

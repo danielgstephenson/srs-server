@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 import { CorrectAnswerMessage, UpdateManagerMessage } from '../messages'
-import { getDateString } from '../math'
+import { getDateString } from '../functions'
 
 export class Manager {
   socket = io()

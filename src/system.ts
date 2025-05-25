@@ -7,6 +7,9 @@ import { Student } from './student'
 import { parseAnswer, unique } from './functions'
 import { Roster } from './roster'
 
+// TO DO
+// Compute Average Grade in grades.csv
+
 export class System {
   server: Server
   roster: Roster

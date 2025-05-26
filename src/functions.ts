@@ -88,6 +88,10 @@ export function parseAnswer (str: string): string {
   return str.toLowerCase().replaceAll(' ', '')
 }
 
+export function toNumber (x: string | number): number {
+  return typeof x === 'number' ? x : parseFloat(x)
+}
+
 export function csvToRows (csv: string): Row[] {
   const options = {
     trimHeaderFields: true

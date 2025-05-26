@@ -8,7 +8,7 @@ import { parseAnswer, unique } from './functions'
 import { Roster } from './roster'
 
 // TO DO
-// Compute Average Grade in grades.csv
+// Show answer counts in manager
 
 export class System {
   server: Server

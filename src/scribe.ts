@@ -2,7 +2,7 @@ import path from 'path'
 import { json2csv } from 'json-2-csv'
 import { readdirSync, writeFileSync } from 'fs-extra'
 import { System } from './system'
-import { Row } from './functions'
+import { mean, round, Row, toNumber } from './functions'
 import { Session } from './session'
 
 export class Scribe {
@@ -81,12 +81,16 @@ export class Scribe {
         sessions: sessions.length,
         average: 0
       }
+      const scores: number[] = []
       sessions.forEach(session => {
         session.questions.forEach(q => {
           const header = session.headers[q]
-          gradeRow[header] = session.scores[id][q]
+          const score = toNumber(session.scores[id][q])
+          gradeRow[header] = score
+          scores.push(score)
         })
       })
+      gradeRow.average = round(mean(scores), 2)
       gradeRows.push(gradeRow)
     })
     sessions.forEach(session => {

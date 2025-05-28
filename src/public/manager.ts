@@ -8,9 +8,9 @@ export class Manager {
   waitDiv = document.getElementById('waitDiv') as HTMLDivElement
   showQuestionDiv = document.getElementById('showQuestionDiv') as HTMLDivElement
   correctAnswerDiv = document.getElementById('correctAnswerDiv') as HTMLDivElement
+  answerCountDiv = document.getElementById('answerCountDiv') as HTMLDivElement
   correctAnswerInput = document.getElementById('correctAnswerInput') as HTMLInputElement
   readyCountSpan = document.getElementById('readyCountSpan') as HTMLSpanElement
-  resultCountSpan = document.getElementById('resultCountSpan') as HTMLSpanElement
   newSessionButton = document.getElementById('newSessionButton') as HTMLButtonElement
   newQuestionButton = document.getElementById('newQuestionButton') as HTMLButtonElement
   hideQuestionButton = document.getElementById('hideQuestionButton') as HTMLButtonElement
@@ -40,6 +40,7 @@ export class Manager {
     })
     this.socket.on('update', (msg: UpdateManagerMessage) => {
       if (msg.state !== 'startup') this.sessionId = msg.sessionId
+      this.updateAnswerCounts(msg)
       this.showDiv(msg)
       this.readyCountSpan.innerHTML = msg.readyCount.toString() + ' '
       if (msg.state === 'correctAnswer' && this.state !== 'correctAnswer') {
@@ -90,6 +91,30 @@ export class Manager {
       answer: this.correctAnswer
     }
     this.socket.emit('correctAnswer', msg)
+  }
+
+  updateAnswerCounts (msg: UpdateManagerMessage): void {
+    this.answerCountDiv.innerHTML = ''
+    const column = document.createElement('div')
+    const answerDiv = document.createElement('div')
+    const countDiv = document.createElement('div')
+    column.classList.add('answerCountColumn')
+    this.answerCountDiv.appendChild(column)
+    column.appendChild(answerDiv)
+    column.appendChild(countDiv)
+    answerDiv.innerHTML = 'Answer:'
+    countDiv.innerHTML = 'Count:'
+    msg.uniqueAnswers.forEach((answer, i) => {
+      const column = document.createElement('div')
+      const answerDiv = document.createElement('div')
+      const countDiv = document.createElement('div')
+      column.classList.add('answerCountColumn')
+      this.answerCountDiv.appendChild(column)
+      column.appendChild(answerDiv)
+      column.appendChild(countDiv)
+      answerDiv.innerHTML = answer
+      countDiv.innerHTML = msg.answerCounts[i].toString()
+    })
   }
 
   showDiv (msg: UpdateManagerMessage): void {

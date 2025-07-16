@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 
 export class Config {
+  tolerance = 0.03
   port = 3000
   secure = false
 

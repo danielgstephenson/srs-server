@@ -58,7 +58,8 @@ export class Session {
         if (typeof answer !== 'number') return
         if (typeof correctAnswer !== 'number') return
         const error = Math.abs(answer - correctAnswer)
-        if (error < 0.002) {
+        const tolerance = this.system.server.config.tolerance
+        if (error < tolerance) {
           this.scores[id][q] = 100
         }
       })

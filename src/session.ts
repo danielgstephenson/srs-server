@@ -48,6 +48,7 @@ export class Session {
       this.questions.forEach(q => {
         const answer = row[q]
         const correctAnswer = this.correctAnswers[q]
+        if (this.answers[id] == null) return
         this.answers[id][q] = answer
         if (answer !== '') {
           this.scores[id][q] = 75

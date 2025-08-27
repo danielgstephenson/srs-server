@@ -55,7 +55,7 @@ export function countOccurrences (str: string, target: string): number {
 }
 
 export function parseDecimal (str: string): number | null {
-  const filtered = filterString(str, '1234567890.')
+  const filtered = filterString(str, '-1234567890.')
   const x = parseFloat(filtered)
   if (!isFinite(x)) return null
   return x
@@ -84,6 +84,7 @@ export function isDecimal (str: string): boolean {
 
 export function parseAnswer (str: string): string {
   const x = parseNumber(str)
+  console.log(str, x)
   if (x != null) return round(x).toString()
   return str.toLowerCase().replaceAll(' ', '')
 }

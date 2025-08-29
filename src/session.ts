@@ -11,6 +11,7 @@ export class Session {
   questions: number[]
   headers: Record<string, string> = {}
   absent: Record<string, boolean> = {}
+  excused: Record<string, boolean> = {}
   correctAnswers: Row = {}
   answers: Record<string, Row> = {}
   scores: Record<string, Row> = {}
@@ -35,6 +36,7 @@ export class Session {
     })
     this.system.ids.forEach(id => {
       this.absent[id] = true
+      this.excused[id] = false
       this.scores[id] = {}
       this.answers[id] = {}
       this.questions.forEach(q => {
@@ -45,9 +47,14 @@ export class Session {
     this.studentRows.forEach(row => {
       const id = row.eid
       this.absent[id] = false
+      this.excused[id] = row.excused === 1
       this.questions.forEach(q => {
         const answer = row[q]
         const correctAnswer = this.correctAnswers[q]
+        if (this.excused[id]) {
+          this.scores[id][q] = 100
+          return
+        }
         if (this.answers[id] == null) return
         this.answers[id][q] = answer
         if (answer !== '') {
